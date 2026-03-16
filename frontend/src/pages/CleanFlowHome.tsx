@@ -244,10 +244,10 @@ export function CleanFlowHome() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between px-4 py-3 text-[10px] text-slate-400">
-                <span>CleanFlow demo screenshot</span>
-                <span>Connects to your existing app · localhost:5173</span>
-              </div>
+            <div className="flex items-center justify-between px-4 py-3 text-[10px] text-slate-400">
+              <span>CleanFlow demo screenshot</span>
+              <span>Connects to your existing operations app</span>
+            </div>
             </div>
           </div>
         </section>
@@ -263,9 +263,8 @@ export function CleanFlowHome() {
                 Everything your cleaning business runs on
               </h2>
               <p className="mt-2 max-w-2xl text-sm text-slate-300/80">
-                CleanFlow connects to your existing operations app at{' '}
-                <span className="font-semibold text-emerald-200">localhost:5173</span> so your team can
-                work in one place while you attract and convert more customers.
+                CleanFlow connects to your existing operations tools so your team can work in one place
+                while you attract and convert more customers.
               </p>
             </div>
           </div>
