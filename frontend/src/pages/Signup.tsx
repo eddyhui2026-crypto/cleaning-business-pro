@@ -39,13 +39,13 @@ export const Signup = () => {
               Start your CleanFlow trial
             </h1>
             <p className="text-sm text-slate-300/80">
-              Tell us a few details about your cleaning business and we&apos;ll help you get your
-              account ready – staff logins, schedule, and invoice settings included.
+              Tell us a few details about your cleaning business and we&apos;ll personally set up your
+              CleanFlow account for you – staff logins, schedule, and invoice settings included.
             </p>
             <ul className="mt-2 space-y-1 text-xs text-slate-400">
               <li>• No credit card required to start.</li>
+              <li>• We&apos;ll contact you to confirm details before activating your trial.</li>
               <li>• Full access to all features during the trial.</li>
-              <li>• We can migrate a small amount of data from your existing system.</li>
             </ul>
           </div>
 
