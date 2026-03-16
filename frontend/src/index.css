@@ -1,0 +1,413 @@
+/* 1. Tailwind 核心指令 - 必須放在最上方 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2. 全域基礎樣式優化 */
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply antialiased text-slate-800 bg-[#F8FAFC];
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* 3. UI/UX design tokens & FullCalendar */
+:root {
+  /* Primary: main CTAs, links, active nav */
+  --color-primary: 99 102 241;
+  --color-primary-hover: 79 70 229;
+  /* Surface (dark theme friendly) */
+  --color-surface: 2 6 23; /* slate-950 */
+  --color-card: 15 23 42;  /* slate-900 */
+  /* Text */
+  --color-text: 248 250 252;
+  --color-text-muted: 148 163 184;
+  /* Status */
+  --color-success: 16 185 129;
+  --color-warning: 245 158 11;
+  --color-error: 239 68 68;
+  /* FullCalendar */
+  --fc-border-color: #1f2937; /* slate-800 */
+  --fc-daygrid-event-dot-width: 8px;
+  --fc-button-bg-color: #4f46e5;
+  --fc-button-border-color: #4f46e5;
+  --fc-button-hover-bg-color: #4338ca;
+  --fc-button-active-bg-color: #3730a3;
+  --fc-today-bg-color: #020617; /* slate-950 */
+  --fc-page-bg-color: #020617;
+}
+
+/* Focus ring for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  @apply outline-none ring-2 ring-indigo-500 ring-offset-2;
+}
+
+/* 4. FullCalendar 插件樣式覆蓋 */
+
+/* 隱藏 FullCalendar 預設邊框與圓角 */
+.fc {
+  @apply rounded-[2rem] overflow-hidden border-none !important;
+  max-width: 100%;
+}
+
+/* 讓按鈕變圓潤 (Tailwind 風格) */
+.fc .fc-button {
+  @apply px-5 py-2 font-bold transition-all duration-200 !important;
+  border-radius: 12px !important;
+  text-transform: capitalize !important;
+  border: none !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 標題字體美化 */
+.fc .fc-toolbar-title {
+  @apply text-xl font-black text-slate-800 tracking-tight !important;
+}
+
+/* 任務塊 (Events) 樣式 - 這是最影響美觀的地方 */
+.fc-event {
+  @apply border-none shadow-sm px-1.5 py-0.5 !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+}
+
+.fc-v-event {
+  @apply shadow-md !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  isolation: isolate;
+  position: relative;
+  z-index: 0;
+}
+
+/* Ensure good contrast + clip content inside block */
+.fc .fc-v-event .fc-event-main {
+  position: relative;
+  color: #e5e7eb !important; /* slate-200 */
+  font-weight: 600 !important;
+  white-space: normal !important;
+  line-height: 1.15 !important;
+  font-size: 0.7rem !important;
+  overflow: hidden !important;
+  word-break: break-word !important;
+  padding: 4px 6px 4px 1.5rem !important; /* space for status dot */
+  min-height: 1.5em !important;
+  height: 100%;
+  width: 100%;
+}
+
+/* Custom event content: allow wrap, clip inside box, max 3 lines total */
+.fc-event-content-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  white-space: normal;
+  word-break: break-word;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  max-height: 100%;
+  line-height: 1.15;
+}
+/* 第 1 行：時間 · 客名 — 可換行，最多 2 行 */
+.fc-event-time-custom {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  opacity: 0.95;
+  overflow: hidden;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+/* 第 2 行：員工 · 時數 — 可換行，最多 1 行（太長用 …） */
+.fc-event-title-custom {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  text-overflow: ellipsis;
+  min-height: 1.15em;
+}
+
+/* Week/Day：長度跟時間，闊度固定（唔兩個夾一半）— 同一時間多個 job 垂直疊，每格全欄闊，字可換行 */
+.admin-schedule-compact .fc-event-compact .fc-event-main {
+  padding: 2px 6px 2px 12px !important;
+  font-size: 0.65rem !important;
+  text-align: left !important;
+}
+.admin-schedule-compact .fc-event-compact .fc-event-main::before {
+  margin-left: 2px;
+  margin-top: 2px;
+}
+.fc-event-content-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  line-height: 1.12;
+  text-align: left;
+  padding-left: 0;
+}
+.fc-event-content-compact .fc-event-line {
+  overflow: hidden;
+  min-width: 0;
+  font-size: 0.6rem;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.fc-event-content-compact .fc-event-status {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+.fc-event-content-compact .fc-event-postcode {
+  opacity: 0.85;
+}
+
+/* Day 視圖：詳細顯示 — 時間·時數、狀態、客人名、完整地址、全部員工，可換行 */
+.fc-event-content-day {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  line-height: 1.2;
+  text-align: left;
+  padding: 4px 8px 4px 12px;
+}
+.fc-event-content-day .fc-event-day-line {
+  min-width: 0;
+  font-size: 0.7rem;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.fc-event-content-day .fc-event-day-time {
+  font-weight: 700;
+  opacity: 0.95;
+}
+.fc-event-content-day .fc-event-day-status {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+.fc-event-content-day .fc-event-day-client {
+  font-weight: 600;
+}
+.fc-event-content-day .fc-event-day-address {
+  font-size: 0.65rem;
+  opacity: 0.9;
+}
+.fc-event-content-day .fc-event-day-staff {
+  font-size: 0.65rem;
+  opacity: 0.9;
+}
+
+/* Bank holidays in Schedule (AdminSchedulePage) */
+.fc-holiday-header {
+  @apply text-rose-300 !important;
+}
+.fc-holiday-cell {
+  @apply bg-rose-500/10 !important;
+}
+
+/* List view: start – end (Xh) title */
+.fc-list-event-content-custom {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Status dots: small circle on its own line at top-left of each event */
+.fc-event.status-pending .fc-event-main::before,
+.fc-event.status-in-progress .fc-event-main::before,
+.fc-event.status-completed .fc-event-main::before,
+.fc-event.status-cancelled .fc-event-main::before {
+  content: '';
+  display: block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px rgba(15,23,42,0.9);
+  margin-left: 4px;
+  margin-top: 4px;
+  margin-bottom: 3px;
+  z-index: 2;
+}
+
+.fc-event.status-pending .fc-event-main::before {
+  background-color: #6366f1; /* indigo-500 */
+}
+.fc-event.status-in-progress .fc-event-main::before {
+  background-color: #3b82f6; /* blue-500 */
+}
+.fc-event.status-completed .fc-event-main::before {
+  background-color: #22c55e; /* emerald-500 */
+}
+
+/* 調整時間格的高度，讓畫面不擁擠 */
+.fc-timegrid-slot {
+  height: 4rem !important;
+}
+
+/* Admin Schedule compact: shallower slots + smaller event min height */
+.admin-schedule-compact .fc-timegrid-slot {
+  height: 2.4rem !important;
+}
+.admin-schedule-compact .fc-timegrid-slot-label {
+  font-size: 0.7rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+/* Overview calendar: force ALL day cells left-aligned (FC default is row-reverse = right) */
+.overview-calendar-wrapper .fc-daygrid-day-frame {
+  text-align: left !important;
+  padding: 0.35rem 0.4rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.overview-calendar-wrapper .fc-daygrid-day-top {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.overview-calendar-wrapper .fc-daygrid-day-top > * {
+  flex: 0 1 auto !important;
+  max-width: 100% !important;
+}
+.overview-calendar-wrapper .overview-day-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  line-height: 1.3;
+  max-width: 100%;
+}
+.overview-calendar-wrapper .overview-day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+.overview-calendar-wrapper .overview-day-date {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #e5e7eb; /* slate-200 */
+}
+.overview-calendar-wrapper .overview-day-jobs {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6ee7b7; /* emerald-300 */
+}
+.overview-calendar-wrapper .overview-day-remark {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: #e2e8f0; /* slate-200 */
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
+  flex: 1;
+  min-height: 1.5em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+.overview-calendar-wrapper .overview-day-remark.overview-day-remark-placeholder {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #94a3b8; /* slate-400 */
+}
+
+/* 隱藏左上角多餘的「all-day」欄位 */
+.fc .fc-timegrid-axis-cbox, 
+.fc .fc-timegrid-slot-label-cbox {
+  display: none;
+}
+
+/* 側邊導航 Tab 轉場動畫 */
+.animate-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 5. Job History Table */
+.job-table-row:hover {
+  @apply bg-slate-50 transition-colors duration-150;
+}
+
+/* 6. Toast animation */
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.animate-toast-in {
+  animation: toastIn 0.3s ease-out;
+}
+
+/* 7. Overdue calendar event + calendar background for dark cards */
+.fc {
+  background-color: #020617 !important; /* slate-950 */
+}
+
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard td,
+.fc-theme-standard th {
+  background-color: transparent !important;
+  border-color: #1f2937 !important; /* slate-800 */
+}
+
+.fc-event.overdue {
+  border-left: 4px solid rgb(239 68 68) !important; /* red-500 */
+  background-color: rgba(248, 113, 113, 0.18) !important; /* red-400 with alpha for dark bg */
+}
+
+/* Night shift / overnight (22:00–06:00) — Commercial office */
+.fc-event.fc-event-night-shift .fc-event-main::before {
+  content: '🌙 ';
+  margin-right: 2px;
+}
