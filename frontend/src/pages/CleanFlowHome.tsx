@@ -2,9 +2,9 @@ import { ArrowRight, CheckCircle2, Star, Quote, Users, Clock, CreditCard, BarCha
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const CUSTOMER_LOGIN_URL = 'http://localhost:5173/customer-login';
-const COMPANY_LOGIN_URL = 'http://localhost:5173/login';
-const TRIAL_URL = 'http://localhost:5173/signup';
+const CUSTOMER_LOGIN_URL = '/customer-login';
+const COMPANY_LOGIN_URL = '/login';
+const TRIAL_URL = '/signup';
 
 export function CleanFlowHome() {
   const [testimonialPage, setTestimonialPage] = useState(0);
