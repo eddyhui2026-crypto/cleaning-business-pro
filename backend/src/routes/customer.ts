@@ -262,7 +262,11 @@ router.patch('/me/password', verifyCustomerToken, async (req: CustomerAuthReques
       res.status(401).json({ error: 'Current password is incorrect' });
       return;
     }
-    await updateCustomerPassword(req.customerId, new_password.trim());
+    if (!req.customerId) {
+      res.status(400).json({ error: 'Customer ID missing from token' });
+      return;
+    }
+    await updateCustomerPassword(String(req.customerId), new_password.trim());
     res.json({ message: 'Password updated. Please use your new password next time you log in.' });
   } catch (err: any) {
     console.error('Change password:', err);

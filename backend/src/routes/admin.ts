@@ -113,9 +113,10 @@ router.post('/recurring-job', requireAdmin, async (req: AuthRequest, res: Respon
   }
 
   try {
-    const repeatDaysArr = repeat_days != null && Array.isArray(repeat_days)
-      ? repeat_days.filter((d: unknown) => Number.isInteger(d) && d >= 0 && d <= 6)
-      : null;
+    const repeatDaysArr =
+      repeat_days != null && Array.isArray(repeat_days)
+        ? repeat_days.filter((d: unknown): d is number => typeof d === 'number' && Number.isInteger(d) && d >= 0 && d <= 6)
+        : null;
     const { data, error } = await supabase
       .from('recurring_jobs')
       .insert({
@@ -192,9 +193,10 @@ router.patch('/recurring-job/:id', requireAdmin, async (req: AuthRequest, res: R
     if (end_time !== undefined) updates.end_time = end_time || null;
     if (preferred_staff_id !== undefined) updates.preferred_staff_id = preferred_staff_id || null;
     if (repeat_days !== undefined) {
-      const arr = repeat_days != null && Array.isArray(repeat_days)
-        ? repeat_days.filter((d: unknown) => Number.isInteger(d) && d >= 0 && d <= 6)
-        : null;
+      const arr =
+        repeat_days != null && Array.isArray(repeat_days)
+          ? repeat_days.filter((d: unknown): d is number => typeof d === 'number' && Number.isInteger(d) && d >= 0 && d <= 6)
+          : null;
       updates.repeat_days = arr?.length ? arr : null;
     }
 

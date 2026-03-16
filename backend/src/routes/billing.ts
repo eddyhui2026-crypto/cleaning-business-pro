@@ -19,8 +19,11 @@ router.post('/create-checkout-session', async (req: AuthRequest, res: Response):
     return;
   }
 
+  // plan can be 'small' | 'medium' | 'large' from frontend; default handled in service
+  const plan = typeof req.body.plan === 'string' ? req.body.plan : null;
+
   try {
-    const session = await createCheckoutSession(companyId, email);
+    const session = await createCheckoutSession(companyId, email, plan);
     res.json({ url: session.url });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

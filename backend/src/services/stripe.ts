@@ -10,21 +10,32 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-02-25.clover' as any, 
 });
 
-export const createCheckoutSession = async (companyId: string, email: string) => {
+type PlanKey = 'small' | 'medium' | 'large';
+
+const PLAN_PRICE_ENV: Record<PlanKey, string | undefined> = {
+  small: process.env.STRIPE_PRICE_SMALL,
+  medium: process.env.STRIPE_PRICE_MEDIUM,
+  large: process.env.STRIPE_PRICE_LARGE,
+};
+
+function getPriceIdForPlan(plan: string | null | undefined): string {
+  const key = (plan ?? 'small') as PlanKey;
+  const priceId = PLAN_PRICE_ENV[key];
+  if (!priceId) {
+    throw new Error(`Stripe price ID missing for plan "${key}". Please set STRIPE_PRICE_${key.toUpperCase()} in backend .env.`);
+  }
+  return priceId;
+}
+
+export const createCheckoutSession = async (companyId: string, email: string, plan: string | null | undefined) => {
   try {
+    const priceId = getPriceIdForPlan(plan);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: 'Cleaning Business Pro - Monthly Subscription',
-              description: 'Manage jobs, staff, and generate PDF reports.',
-            },
-            unit_amount: 990, // £9.90
-            recurring: { interval: 'month' },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
