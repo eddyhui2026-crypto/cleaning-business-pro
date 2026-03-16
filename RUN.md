@@ -38,6 +38,7 @@ npm run dev
 - **14-day trial:** `companies.trial_ends_at`; backend exposes it via `resolveCompany` and GET `/api/companies`.
 - **Public report:** GET `/api/reports/report/:token` – rate-limited (60/min per IP), no auth, 404 if token invalid.
 - **company_id:** Always from logged-in user (never from client).
+- **Internal API (trial signup):** Set `INTERNAL_API_SECRET` in backend `.env`. Then `POST /api/internal/create-trial-account` with header `X-Internal-Secret: <secret>` and body `{ companyName, contactName, email, phone?, staffCount?, trialDays? }` creates Auth user + company + admin profile and returns `loginUrl`, `email`, `temporaryPassword`, `companyId`, `trialEndsAt`.
 
 ## 3. Frontend (Vite + React)
 

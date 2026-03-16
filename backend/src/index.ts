@@ -19,6 +19,7 @@ import invoicesRouter from './routes/invoices';
 import quotesRouter from './routes/quotes';
 import customerRouter from './routes/customer';
 import bookingRouter from './routes/booking';
+import internalRouter from './routes/internal';
 
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
@@ -66,6 +67,8 @@ app.use('/api/admin/invoices', apiAuth, invoicesRouter);
 app.use('/api/admin/quotes', apiAuth, quotesRouter);
 app.use('/api/customer', customerRouter);
 app.use('/api/booking', bookingRouter);
+// Internal API (secret key only, no JWT): e.g. create-trial-account
+app.use('/api/internal', internalRouter);
 
 // Global error handler (optional)
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
