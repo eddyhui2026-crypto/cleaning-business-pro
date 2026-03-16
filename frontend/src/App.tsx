@@ -40,6 +40,7 @@ import { AdminGettingStarted } from './pages/AdminGettingStarted';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { DataAndCookiesPolicy } from './pages/DataAndCookiesPolicy';
+import { Signup } from './pages/Signup';
 
 /** Redirects to /billing when subscription is inactive; otherwise renders children. */
 function AdminRoute({
@@ -169,6 +170,7 @@ export default function App() {
               {!session ? (
                 <>
                   <Route path="/" element={<CleanFlowHome />} />
+                  <Route path="/signup" element={<Signup />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/data-and-cookies" element={<DataAndCookiesPolicy />} />
