@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { AuthRequest } from './auth';
 
 const CUSTOMER_JWT_SECRET = process.env.CUSTOMER_JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'customer-jwt-dev-secret-change-in-production';
@@ -13,8 +13,8 @@ export interface CustomerAuthRequest extends AuthRequest {
 export function signCustomerToken(payload: { customerId: string; companyId: string }): string {
   return jwt.sign(
     { sub: payload.customerId, companyId: payload.companyId, type: 'customer' },
-    CUSTOMER_JWT_SECRET as Secret,
-    { expiresIn: CUSTOMER_JWT_EXPIRY }
+    CUSTOMER_JWT_SECRET as any,
+    { expiresIn: CUSTOMER_JWT_EXPIRY } as any
   );
 }
 
@@ -30,7 +30,7 @@ export function verifyCustomerToken(req: CustomerAuthRequest, res: Response, nex
     return;
   }
   try {
-    const decoded = jwt.verify(token, CUSTOMER_JWT_SECRET as Secret) as {
+    const decoded = jwt.verify(token, CUSTOMER_JWT_SECRET as any) as {
       sub: string;
       companyId: string;
       type?: string;
