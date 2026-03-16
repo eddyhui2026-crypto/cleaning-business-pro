@@ -23,7 +23,7 @@ export const Signup = () => {
       'Please help me set up a CleanFlow trial account.',
     ];
     const body = encodeURIComponent(lines.join('\n'));
-    window.location.href = `mailto:support@cleanflow.app?subject=${encodeURIComponent(subject)}&body=${body}`;
+    window.location.href = `mailto:eddyhui2026@gmail.com?subject=${encodeURIComponent(subject)}&body=${body}`;
   };
 
   return (

@@ -87,8 +87,8 @@ export function DataAndCookiesPolicy() {
             <p className="mt-2">
               If you have any questions about cookies, data retention, or how CleanFlow handles data for
               your business, please contact{' '}
-              <a href="mailto:support@cleanflow.app" className="text-emerald-300 hover:text-emerald-200">
-                support@cleanflow.app
+              <a href="mailto:eddyhui2026@gmail.com" className="text-emerald-300 hover:text-emerald-200">
+                eddyhui2026@gmail.com
               </a>
               .
             </p>

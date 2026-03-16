@@ -14,7 +14,7 @@ function ensureVapid(): void {
   const privateKey = process.env.VAPID_PRIVATE_KEY;
   if (publicKey && privateKey) {
     webpush.setVapidDetails(
-      process.env.VAPID_MAILTO || 'mailto:support@cleanflow.app',
+      process.env.VAPID_MAILTO || 'mailto:eddyhui2026@gmail.com',
       publicKey,
       privateKey
     );

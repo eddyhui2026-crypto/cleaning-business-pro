@@ -113,8 +113,8 @@ export function PrivacyPolicy() {
             <h2 className="text-sm font-semibold text-slate-50">7. Contact</h2>
             <p className="mt-2">
               For questions about this privacy policy or how CleanFlow handles data, please contact us at{' '}
-              <a href="mailto:support@cleanflow.app" className="text-emerald-300 hover:text-emerald-200">
-                support@cleanflow.app
+              <a href="mailto:eddyhui2026@gmail.com" className="text-emerald-300 hover:text-emerald-200">
+                eddyhui2026@gmail.com
               </a>
               .
             </p>

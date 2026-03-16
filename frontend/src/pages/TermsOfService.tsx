@@ -99,8 +99,8 @@ export function TermsOfService() {
             <p className="mt-2">
               If you have questions about these terms or how they apply to your business, please contact us
               at{' '}
-              <a href="mailto:support@cleanflow.app" className="text-emerald-300 hover:text-emerald-200">
-                support@cleanflow.app
+              <a href="mailto:eddyhui2026@gmail.com" className="text-emerald-300 hover:text-emerald-200">
+                eddyhui2026@gmail.com
               </a>
               .
             </p>
