@@ -1018,6 +1018,14 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
                                               ? 'Sent'
                                               : 'Draft'}
                                           </span>
+                                        ) : status === 'completed' ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => navigate(`/admin/jobs/new?fromJob=${encodeURIComponent(job.id)}&returnTo=invoices`)}
+                                            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline"
+                                          >
+                                            Create
+                                          </button>
                                         ) : (
                                           <span className="text-xs text-slate-500">None</span>
                                         )}
