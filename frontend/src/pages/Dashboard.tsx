@@ -1116,54 +1116,58 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
 
                     <div>
                       <h3 className="font-black text-slate-50 uppercase tracking-tight mb-4 px-1">Schedule overview</h3>
-                      <div className="bg-slate-900/80 p-6 rounded-[3rem] border border-white/10 shadow-[0_18px_45px_rgba(15,23,42,0.9)] overflow-hidden overview-calendar-wrapper">
-                      <FullCalendar
-                        plugins={[dayGridPlugin, interactionPlugin]}
-                        initialView="dayGridMonth"
-                        height="auto"
-                        contentHeight={520}
-                        headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
-                        events={[]}
-                        datesSet={(info: any) => {
-                          if (info.startStr && info.endStr) {
-                            setRemarkDatesRange({ from: info.startStr.slice(0, 10), to: info.endStr.slice(0, 10) });
-                          }
-                        }}
-                        dayCellContent={(arg: any) => {
-                          const dateKey = arg.date.toISOString().slice(0, 10);
-                          const count = events.filter((e) => e.start.slice(0, 10) === dateKey).length;
-                          const jobsText = count ? `${count} job${count > 1 ? 's' : ''}` : '';
-                          const remark = dailyRemarks[dateKey];
-                          const safeRemark = remark ? String(remark).replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-                          const remarkPreview = safeRemark ? safeRemark.slice(0, 80) + (safeRemark.length > 80 ? '…' : '') : '';
-                          const hasRemark = Boolean(remarkPreview);
-                          const remarkText = hasRemark ? remarkPreview : 'Remark';
-                          const remarkClass = hasRemark
-                            ? 'overview-day-remark'
-                            : 'overview-day-remark overview-day-remark-placeholder';
-                          const holiday = isUkBankHoliday(dateKey);
-                          const holidayBadge = holiday
-                            ? `<div class="mt-1 text-[9px] font-bold text-rose-300 uppercase tracking-[0.18em]">Bank Holiday</div>`
-                            : '';
-                          return {
-                            html:
-                              '<div class="overview-day-cell">' +
-                                '<div class="overview-day-header">' +
-                                  `<span class="overview-day-date">${arg.dayNumberText}</span>` +
-                                  (jobsText ? `<span class="overview-day-jobs">${jobsText}</span>` : '') +
-                                '</div>' +
-                                `<div class="${remarkClass}">${remarkText}</div>` +
-                                holidayBadge +
-                              '</div>',
-                          };
-                        }}
-                        dateClick={(info: any) => {
-                          const dateKey = info.dateStr.slice(0, 10);
-                          const jobCount = events.filter((e) => e.start.slice(0, 10) === dateKey).length;
-                          setRemarkModal({ dateStr: info.dateStr, jobCount });
-                          setRemarkDraft(dailyRemarks[dateKey] ?? '');
-                        }}
-                      />
+                      <div className="bg-slate-900/80 p-6 rounded-[3rem] border border-white/10 shadow-[0_18px_45px_rgba(15,23,42,0.9)] overview-calendar-wrapper">
+                        <div className="w-full overflow-x-auto">
+                          <div className="min-w-[720px] md:min-w-[880px]">
+                            <FullCalendar
+                              plugins={[dayGridPlugin, interactionPlugin]}
+                              initialView="dayGridMonth"
+                              height="auto"
+                              contentHeight={520}
+                              headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
+                              events={[]}
+                              datesSet={(info: any) => {
+                                if (info.startStr && info.endStr) {
+                                  setRemarkDatesRange({ from: info.startStr.slice(0, 10), to: info.endStr.slice(0, 10) });
+                                }
+                              }}
+                              dayCellContent={(arg: any) => {
+                                const dateKey = arg.date.toISOString().slice(0, 10);
+                                const count = events.filter((e) => e.start.slice(0, 10) === dateKey).length;
+                                const jobsText = count ? `${count} job${count > 1 ? 's' : ''}` : '';
+                                const remark = dailyRemarks[dateKey];
+                                const safeRemark = remark ? String(remark).replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                                const remarkPreview = safeRemark ? safeRemark.slice(0, 80) + (safeRemark.length > 80 ? '…' : '') : '';
+                                const hasRemark = Boolean(remarkPreview);
+                                const remarkText = hasRemark ? remarkPreview : 'Remark';
+                                const remarkClass = hasRemark
+                                  ? 'overview-day-remark'
+                                  : 'overview-day-remark overview-day-remark-placeholder';
+                                const holiday = isUkBankHoliday(dateKey);
+                                const holidayBadge = holiday
+                                  ? `<div class="mt-1 text-[9px] font-bold text-rose-300 uppercase tracking-[0.18em]">Bank Holiday</div>`
+                                  : '';
+                                return {
+                                  html:
+                                    '<div class="overview-day-cell">' +
+                                      '<div class="overview-day-header">' +
+                                        `<span class="overview-day-date">${arg.dayNumberText}</span>` +
+                                        (jobsText ? `<span class="overview-day-jobs">${jobsText}</span>` : '') +
+                                      '</div>' +
+                                      `<div class="${remarkClass}">${remarkText}</div>` +
+                                      holidayBadge +
+                                    '</div>',
+                                };
+                              }}
+                              dateClick={(info: any) => {
+                                const dateKey = info.dateStr.slice(0, 10);
+                                const jobCount = events.filter((e) => e.start.slice(0, 10) === dateKey).length;
+                                setRemarkModal({ dateStr: info.dateStr, jobCount });
+                                setRemarkDraft(dailyRemarks[dateKey] ?? '');
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                 </div>
