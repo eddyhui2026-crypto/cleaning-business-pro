@@ -869,9 +869,9 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                   <option value="percentage">Percentage of job price</option>
                   <option value="fixed">Fixed amount per job</option>
                 </select>
-                {defaultPayTypeDraft === 'hourly' && (
+                <div className="mt-3 space-y-2">
                   <div>
-                    <label className="block text-xs text-slate-400 mt-2">Default hourly rate (£)</label>
+                    <label className="block text-xs text-slate-400">Default hourly rate (£)</label>
                     <input
                       type="number"
                       min={0}
@@ -882,10 +882,8 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                       placeholder="e.g. 12.50"
                     />
                   </div>
-                )}
-                {defaultPayTypeDraft === 'percentage' && (
                   <div>
-                    <label className="block text-xs text-slate-400 mt-2">Default percentage (%)</label>
+                    <label className="block text-xs text-slate-400">Default percentage of job (%)</label>
                     <input
                       type="number"
                       min={0}
@@ -897,10 +895,8 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                       placeholder="e.g. 40"
                     />
                   </div>
-                )}
-                {defaultPayTypeDraft === 'fixed' && (
                   <div>
-                    <label className="block text-xs text-slate-400 mt-2">Default fixed pay per job (£)</label>
+                    <label className="block text-xs text-slate-400">Default fixed pay per job (£)</label>
                     <input
                       type="number"
                       min={0}
@@ -911,8 +907,11 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                       placeholder="e.g. 50"
                     />
                   </div>
-                )}
-                <p className="text-xs text-slate-500">Used when an employee has no personal pay set (personal pay = table below).</p>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    All three rates are saved. We use the one that matches the selected&nbsp;
+                    <span className="font-semibold">Company default pay type</span> when an employee has no personal pay set.
+                  </p>
+                </div>
               </div>
             </div>
             <div className="flex gap-2 mt-6">
