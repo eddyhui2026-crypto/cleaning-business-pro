@@ -89,8 +89,15 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   const [payrollThisMonth, setPayrollThisMonth] = useState<number>(0);
   const [payrollThisWeek, setPayrollThisWeek] = useState<number>(0);
   const [companyInfo, setCompanyInfo] = useState<{
-    name?: string; booking_slug?: string;
-    default_pay_type?: string | null; default_hourly_rate?: number | null; default_pay_percentage?: number | null; default_fixed_pay?: number | null;
+    name?: string;
+    booking_slug?: string;
+    default_pay_type?: string | null;
+    default_hourly_rate?: number | null;
+    default_pay_percentage?: number | null;
+    default_fixed_pay?: number | null;
+    default_payment_method?: string | null;
+    default_payment_instructions?: string | null;
+    default_payment_terms_days?: number | null;
   } | null>(null);
   const [userDisplayName, setUserDisplayName] = useState<string>('');
   const [showGettingStartedHint, setShowGettingStartedHint] = useState<boolean>(() => {
@@ -182,6 +189,9 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
           default_hourly_rate: c.default_hourly_rate,
           default_pay_percentage: c.default_pay_percentage,
           default_fixed_pay: c.default_fixed_pay,
+          default_payment_method: (c as any).default_payment_method ?? null,
+          default_payment_instructions: (c as any).default_payment_instructions ?? null,
+          default_payment_terms_days: (c as any).default_payment_terms_days ?? null,
         } : null);
         setUserDisplayName(typeof profileName === 'string' ? profileName : '');
         return { jobsData, staffData, bookingsData, paymentsData, invoicesData, staffLocData };
