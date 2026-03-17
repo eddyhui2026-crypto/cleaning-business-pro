@@ -149,16 +149,21 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
 
   if (loading && !customer) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     );
   }
   if (!customer) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4">
-        <button onClick={() => navigate('/admin/customers')} className="text-indigo-600 font-medium">← Back to customers</button>
-        <p className="mt-4 text-slate-600">Customer not found.</p>
+      <div className="min-h-screen bg-slate-950 p-4 text-slate-50">
+        <button
+          onClick={() => navigate('/admin/customers')}
+          className="text-emerald-300 font-medium hover:text-emerald-200"
+        >
+          ← Back to customers
+        </button>
+        <p className="mt-4 text-slate-400">Customer not found.</p>
       </div>
     );
   }
@@ -173,29 +178,41 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 lg:pb-0">
-      <div className="bg-white border-b border-slate-100 p-4 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-950 text-slate-50 pb-20 lg:pb-0">
+      <div className="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/admin/customers')} className="p-2 hover:bg-slate-100 rounded-xl">
+          <button
+            onClick={() => navigate('/admin/customers')}
+            className="p-2 hover:bg-slate-800 rounded-xl text-slate-300"
+          >
             <ChevronLeft size={24} />
           </button>
           <div>
-            <h1 className="font-black text-2xl text-slate-800">{customer.full_name}</h1>
-            <p className="text-slate-500 text-sm">{customer.phone} {customer.email ? ` · ${customer.email}` : ''}</p>
+            <h1 className="font-black text-2xl text-slate-50">{customer.full_name}</h1>
+            <p className="text-slate-400 text-sm">
+              {customer.phone} {customer.email ? ` · ${customer.email}` : ''}
+            </p>
           </div>
         </div>
-        <button onClick={openPaymentSettings} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-xl font-medium text-slate-700 hover:bg-slate-50">
+        <button
+          onClick={openPaymentSettings}
+          className="flex items-center gap-2 px-4 py-2 border border-emerald-400/40 rounded-xl font-medium text-emerald-300 hover:bg-slate-800"
+        >
           <CreditCard size={18} /> Payment method
         </button>
       </div>
 
       <div className="p-4 max-w-4xl mx-auto">
-        <div className="flex gap-2 border-b border-slate-200 mb-6 overflow-x-auto">
+        <div className="flex gap-2 border-b border-slate-800 mb-6 overflow-x-auto">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-medium whitespace-nowrap ${tab === t.id ? 'bg-white border border-b-0 border-slate-200 text-indigo-600' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-xl font-medium whitespace-nowrap ${
+                tab === t.id
+                  ? 'bg-slate-900 border border-b-0 border-slate-700 text-emerald-300'
+                  : 'text-slate-400 hover:bg-slate-900'
+              }`}
             >
               <t.icon size={18} /> {t.label}
             </button>
@@ -203,42 +220,85 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
         </div>
 
         {tab === 'profile' && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Full name</label>
-              <input value={editForm.full_name} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))} className="w-full border border-slate-300 rounded-xl px-4 py-2" />
+              <label className="block text-sm font-medium text-slate-200 mb-1">Full name</label>
+              <input
+                value={editForm.full_name}
+                onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))}
+                className="w-full border border-slate-700 bg-slate-950 rounded-xl px-4 py-2 text-slate-50 placeholder:text-slate-500"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-              <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} className="w-full border border-slate-300 rounded-xl px-4 py-2" />
+              <label className="block text-sm font-medium text-slate-200 mb-1">Phone</label>
+              <input
+                value={editForm.phone}
+                onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
+                className="w-full border border-slate-700 bg-slate-950 rounded-xl px-4 py-2 text-slate-50 placeholder:text-slate-500"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-              <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className="w-full border border-slate-300 rounded-xl px-4 py-2" />
+              <label className="block text-sm font-medium text-slate-200 mb-1">Email</label>
+              <input
+                type="email"
+                value={editForm.email}
+                onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                className="w-full border border-slate-700 bg-slate-950 rounded-xl px-4 py-2 text-slate-50 placeholder:text-slate-500"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
-              <input value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} className="w-full border border-slate-300 rounded-xl px-4 py-2" />
+              <label className="block text-sm font-medium text-slate-200 mb-1">Address</label>
+              <input
+                value={editForm.address}
+                onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))}
+                className="w-full border border-slate-700 bg-slate-950 rounded-xl px-4 py-2 text-slate-50 placeholder:text-slate-500"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
-              <textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} rows={3} className="w-full border border-slate-300 rounded-xl px-4 py-2" />
+              <label className="block text-sm font-medium text-slate-200 mb-1">Notes</label>
+              <textarea
+                value={editForm.notes}
+                onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                rows={3}
+                className="w-full border border-slate-700 bg-slate-950 rounded-xl px-4 py-2 text-slate-50 placeholder:text-slate-500"
+              />
             </div>
-            <button onClick={handleSaveProfile} disabled={saving} className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50">Save</button>
+            <button
+              onClick={handleSaveProfile}
+              disabled={saving}
+              className="px-6 py-2 bg-emerald-500 text-slate-950 rounded-xl font-medium hover:bg-emerald-400 disabled:opacity-50"
+            >
+              Save
+            </button>
           </div>
         )}
 
         {tab === 'notes' && (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex gap-2">
-              <textarea value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="Add internal note..." rows={2} className="flex-1 border border-slate-300 rounded-xl px-4 py-2" />
-              <button onClick={handleAddNote} disabled={saving} className="self-end px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1"><Plus size={18} /> Add</button>
+          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
+            <div className="p-4 border-b border-slate-800 flex gap-2">
+              <textarea
+                value={newNote}
+                onChange={e => setNewNote(e.target.value)}
+                placeholder="Add internal note..."
+                rows={2}
+                className="flex-1 border border-slate-700 bg-slate-950 rounded-xl px-4 py-2 text-slate-50 placeholder:text-slate-500"
+              />
+              <button
+                onClick={handleAddNote}
+                disabled={saving}
+                className="self-end px-4 py-2 bg-emerald-500 text-slate-950 rounded-xl font-medium hover:bg-emerald-400 disabled:opacity-50 flex items-center gap-1"
+              >
+                <Plus size={18} /> Add
+              </button>
             </div>
             <ul>
               {notes.length === 0 ? <li className="p-4 text-slate-500 text-sm">No notes yet.</li> : notes.map((n) => (
-                <li key={n.id} className="p-4 border-b border-slate-100 last:border-0">
-                  <p className="text-slate-800">{n.content}</p>
-                  <p className="text-xs text-slate-400 mt-1">{n.created_at ? new Date(n.created_at).toLocaleString() : ''} {n.created_by_name ? `· ${n.created_by_name}` : ''}</p>
+                <li key={n.id} className="p-4 border-b border-slate-800 last:border-0">
+                  <p className="text-slate-100">{n.content}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {n.created_at ? new Date(n.created_at).toLocaleString() : ''}{' '}
+                    {n.created_by_name ? `· ${n.created_by_name}` : ''}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -246,13 +306,15 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
         )}
 
         {tab === 'bookings' && (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
             {bookings.length === 0 ? <p className="p-4 text-slate-500">No bookings.</p> : (
               <ul>
                 {bookings.map((b) => (
-                  <li key={b.id} className="p-4 border-b border-slate-100 last:border-0 flex justify-between">
-                    <span>{formatDateUK(b.preferred_date)} — {b.service_type?.replace(/_/g, ' ')} ({b.status})</span>
-                    <span className="text-slate-500 text-sm">{b.payment_status}</span>
+                  <li key={b.id} className="p-4 border-b border-slate-800 last:border-0 flex justify-between">
+                    <span className="text-slate-100">
+                      {formatDateUK(b.preferred_date)} — {b.service_type?.replace(/_/g, ' ')} ({b.status})
+                    </span>
+                    <span className="text-slate-400 text-sm">{b.payment_status}</span>
                   </li>
                 ))}
               </ul>
@@ -261,16 +323,28 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
         )}
 
         {tab === 'quotes' && (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-100">
-              <button onClick={() => navigate(`/admin/quotes/new?customer=${customerId}`)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700"><Plus size={18} /> New quote</button>
+          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
+            <div className="p-4 border-b border-slate-800">
+              <button
+                onClick={() => navigate(`/admin/quotes/new?customer=${customerId}`)}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-slate-950 rounded-xl font-medium hover:bg-emerald-400"
+              >
+                <Plus size={18} /> New quote
+              </button>
             </div>
             {quotes.length === 0 ? <p className="p-4 text-slate-500">No quotes yet.</p> : (
               <ul>
                 {quotes.map((q) => (
-                  <li key={q.id} className="p-4 border-b border-slate-100 last:border-0 flex justify-between items-center">
-                    <span>{q.quote_number} — {q.service_type} · £{Number(q.total_price).toFixed(2)} ({q.status})</span>
-                    <button onClick={() => navigate(`/admin/quotes`)} className="text-indigo-600 text-sm font-medium">View all quotes</button>
+                  <li key={q.id} className="p-4 border-b border-slate-800 last:border-0 flex justify-between items-center">
+                    <span className="text-slate-100">
+                      {q.quote_number} — {q.service_type} · £{Number(q.total_price).toFixed(2)} ({q.status})
+                    </span>
+                    <button
+                      onClick={() => navigate(`/admin/quotes`)}
+                      className="text-emerald-300 text-sm font-medium hover:text-emerald-200"
+                    >
+                      View all quotes
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -279,16 +353,28 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
         )}
 
         {tab === 'invoices' && (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="p-4 border-b border-slate-100">
-              <button onClick={() => navigate(`/admin/invoices?new=${customerId}`)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700"><Plus size={18} /> Create invoice</button>
+          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
+            <div className="p-4 border-b border-slate-800">
+              <button
+                onClick={() => navigate(`/admin/invoices?new=${customerId}`)}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-slate-950 rounded-xl font-medium hover:bg-emerald-400"
+              >
+                <Plus size={18} /> Create invoice
+              </button>
             </div>
             {invoices.length === 0 ? <p className="p-4 text-slate-500">No invoices.</p> : (
               <ul>
                 {invoices.map((inv) => (
-                  <li key={inv.id} className="p-4 border-b border-slate-100 last:border-0 flex justify-between items-center">
-                    <span>{inv.invoice_number} — {inv.currency} {Number(inv.total).toFixed(2)} ({inv.status})</span>
-                    <button onClick={() => navigate(`/admin/invoices`)} className="text-indigo-600 text-sm font-medium">View</button>
+                  <li key={inv.id} className="p-4 border-b border-slate-800 last:border-0 flex justify-between items-center">
+                    <span className="text-slate-100">
+                      {inv.invoice_number} — {inv.currency} {Number(inv.total).toFixed(2)} ({inv.status})
+                    </span>
+                    <button
+                      onClick={() => navigate(`/admin/invoices`)}
+                      className="text-emerald-300 text-sm font-medium hover:text-emerald-200"
+                    >
+                      View
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -297,13 +383,17 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
         )}
 
         {tab === 'payments' && (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.9)]">
             {payments.length === 0 ? <p className="p-4 text-slate-500">No payment records.</p> : (
               <ul>
                 {payments.map((p) => (
-                  <li key={p.id} className="p-4 border-b border-slate-100 last:border-0 flex justify-between">
-                    <span>£{Number(p.amount).toFixed(2)} — {p.method} ({p.status})</span>
-                    <span className="text-slate-500 text-sm">{p.paid_at ? new Date(p.paid_at).toLocaleDateString() : ''}</span>
+                  <li key={p.id} className="p-4 border-b border-slate-800 last:border-0 flex justify-between">
+                    <span className="text-slate-100">
+                      £{Number(p.amount).toFixed(2)} — {p.method} ({p.status})
+                    </span>
+                    <span className="text-slate-400 text-sm">
+                      {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : ''}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -313,16 +403,31 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
       </div>
 
       {paymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setPaymentModal(false)}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          onClick={() => setPaymentModal(false)}
+        >
+          <div
+            className="bg-slate-900 rounded-2xl shadow-[0_22px_60px_rgba(15,23,42,0.95)] max-w-md w-full p-6 border border-slate-700"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-slate-800">Payment method</h2>
-              <button onClick={() => setPaymentModal(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg"><X size={20} /></button>
+              <h2 className="text-lg font-bold text-slate-50">Payment method</h2>
+              <button
+                onClick={() => setPaymentModal(false)}
+                className="p-2 text-slate-400 hover:bg-slate-800 rounded-lg"
+              >
+                <X size={20} />
+              </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Method</label>
-                <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className="w-full border border-slate-300 rounded-xl px-3 py-2">
+                <label className="block text-sm font-medium text-slate-200 mb-1">Method</label>
+                <select
+                  value={paymentMethod}
+                  onChange={e => setPaymentMethod(e.target.value)}
+                  className="w-full border border-slate-700 bg-slate-950 rounded-xl px-3 py-2 text-slate-50"
+                >
                   <option value="self_collect">Self-collect (cash / bank transfer)</option>
                   <option value="payment_link">Send payment link</option>
                   <option value="stripe_connect">Stripe Connect (future)</option>
@@ -330,18 +435,42 @@ export function AdminCustomerDetailPage({ companyId }: AdminCustomerDetailPagePr
               </div>
               {paymentMethod === 'payment_link' && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Payment link URL</label>
-                  <input type="url" value={paymentLinkUrl} onChange={e => setPaymentLinkUrl(e.target.value)} className="w-full border border-slate-300 rounded-xl px-3 py-2" placeholder="https://..." />
+                  <label className="block text-sm font-medium text-slate-200 mb-1">Payment link URL</label>
+                  <input
+                    type="url"
+                    value={paymentLinkUrl}
+                    onChange={e => setPaymentLinkUrl(e.target.value)}
+                    className="w-full border border-slate-700 bg-slate-950 rounded-xl px-3 py-2 text-slate-50 placeholder:text-slate-500"
+                    placeholder="https://..."
+                  />
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Instructions (optional)</label>
-                <textarea value={instructions} onChange={e => setInstructions(e.target.value)} rows={2} className="w-full border border-slate-300 rounded-xl px-3 py-2" />
+                <label className="block text-sm font-medium text-slate-200 mb-1">
+                  Instructions (optional)
+                </label>
+                <textarea
+                  value={instructions}
+                  onChange={e => setInstructions(e.target.value)}
+                  rows={2}
+                  className="w-full border border-slate-700 bg-slate-950 rounded-xl px-3 py-2 text-slate-50 placeholder:text-slate-500"
+                />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setPaymentModal(false)} className="flex-1 py-2 border border-slate-300 rounded-xl font-medium text-slate-700">Cancel</button>
-              <button onClick={savePaymentSettings} disabled={saving} className="flex-1 py-2 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50">Save</button>
+              <button
+                onClick={() => setPaymentModal(false)}
+                className="flex-1 py-2 border border-slate-700 rounded-xl font-medium text-slate-200 hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={savePaymentSettings}
+                disabled={saving}
+                className="flex-1 py-2 bg-emerald-500 text-slate-950 rounded-xl font-medium hover:bg-emerald-400 disabled:opacity-50"
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
