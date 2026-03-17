@@ -171,7 +171,11 @@ export function AdminReportsPage({ companyId }: AdminReportsPageProps) {
 
   const handleExportPdf = () => {
     setExportingPdf(true);
-    setTimeout(() => setExportingPdf(false), 500);
+    try {
+      window.print();
+    } finally {
+      setTimeout(() => setExportingPdf(false), 600);
+    }
   };
 
   if (loading) {
