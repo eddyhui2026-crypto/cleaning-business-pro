@@ -386,30 +386,32 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
                   })}
                 </div>
               )}
-            </div>
-            <FullCalendar
-              ref={calendarRef}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-              initialView="timeGridWeek"
-              events={filteredEvents}
-              headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' }}
-              eventClick={(info) => openEditModal(info.event.extendedProps)}
-              editable={true}
-              eventDurationEditable={false}
-              eventStartEditable={true}
-              eventDrop={handleEventDrop}
-              height="auto"
-              contentHeight={420}
-              expandRows={false}
-              slotMinTime={STANDARD_HOURS.slotMinTime}
-              slotMaxTime={STANDARD_HOURS.slotMaxTime}
-              scrollTime={STANDARD_HOURS.scrollTime}
-              slotDuration="00:30:00"
-              snapDuration="00:30:00"
-              allDaySlot={true}
-              eventMinHeight={10}
-              displayEventTime={false}
-              slotEventOverlap={false}
+         </div>
+          <div className="overflow-x-auto pb-4">
+              <div className="min-w-[900px] lg:min-w-full">
+                <FullCalendar
+                  ref={calendarRef}
+                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+                  initialView="timeGridWeek"
+                  events={filteredEvents}
+                  headerToolbar={{ left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' }}
+                  eventClick={(info) => openEditModal(info.event.extendedProps)}
+                  editable={true}
+                  eventDurationEditable={false}
+                  eventStartEditable={true}
+                  eventDrop={handleEventDrop}
+                  height="auto"
+                  contentHeight={420}
+                  expandRows={false}
+                  slotMinTime={STANDARD_HOURS.slotMinTime}
+                  slotMaxTime={STANDARD_HOURS.slotMaxTime}
+                  scrollTime={STANDARD_HOURS.scrollTime}
+                  slotDuration="00:30:00"
+                  snapDuration="00:30:00"
+                  allDaySlot={true}
+                  eventMinHeight={10}
+                  displayEventTime={false}
+                  slotEventOverlap={false}
               eventClassNames={(arg) => {
                 const view = arg.view?.type ?? '';
                 return view.includes('timeGrid') ? ['fc-event-compact'] : [];
@@ -621,8 +623,11 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
                 info.el.setAttribute('title', lines.join('\n'));
               }}
               slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
-              eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
-            />
+                  eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
+                />
+              </div>
+            </div>
+            
           </div>
         )}
       </div>
