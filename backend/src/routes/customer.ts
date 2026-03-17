@@ -397,7 +397,7 @@ router.post('/push-subscription', verifyCustomerToken, async (req: CustomerAuthR
     return;
   }
   try {
-    await saveSubscription(req.customerCompanyId, subscription, req.customerId);
+    await saveSubscription(req.customerCompanyId, subscription, req.customerId, null);
     res.status(204).end();
   } catch (err: any) {
     console.error('Save customer push subscription:', err);

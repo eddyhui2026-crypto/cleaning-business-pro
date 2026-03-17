@@ -6,6 +6,7 @@ import { checkJobLimit } from '../middleware/planLimits';
 import { ensureCustomerForCompany, sendWelcomeEmail } from '../services/customerService';
 import { notifyCustomerJobCompleted } from '../services/notifications';
 import { calculateCleanerPayForJob } from '../services/cleanerPay';
+import { notifyStaff } from '../services/pushNotificationService';
 
 const router = Router();
 
@@ -276,6 +277,21 @@ router.post('/', checkJobLimit, async (req: AuthRequest, res: Response): Promise
       }));
       const { error: assignError } = await supabase.from('job_assignments').insert(assignments);
       if (assignError) throw assignError;
+
+      // Notify assigned staff about new job
+      const when = newJob.scheduled_at ? new Date(newJob.scheduled_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+      const title = 'New job assigned';
+      const body = `${newJob.client_name || 'Client'} — ${when}`;
+      await Promise.all(
+        ids.map((sid: string) =>
+          notifyStaff(sid, companyId, {
+            title,
+            body,
+            url: '/staff',
+            tag: `job-${newJob.id}`,
+          }),
+        ),
+      );
     }
 
     res.status(201).json(newJob);
@@ -506,7 +522,7 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { data: existing, error: existErr } = await supabase
       .from('jobs')
-      .select('id')
+      .select('id, scheduled_at')
       .eq('id', id)
       .eq('company_id', companyId)
       .single();
@@ -515,6 +531,8 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
       res.status(404).json({ error: 'Job not found' });
       return;
     }
+
+    const previousScheduledAt = (existing as any).scheduled_at as string | null;
 
     if (Object.keys(updatePayload).length > 0) {
       const { error: updateError } = await supabase
@@ -528,13 +546,59 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
       }
     }
 
+    let newStaffIds: string[] | null = null;
     if (staffIdsToSet !== undefined) {
       await supabase.from('job_assignments').delete().eq('job_id', id);
       if (staffIdsToSet.length > 0) {
         const assignments = staffIdsToSet.map((sId: string) => ({ job_id: id, staff_id: sId }));
         const { error: assignError } = await supabase.from('job_assignments').insert(assignments);
         if (assignError) throw assignError;
+        newStaffIds = staffIdsToSet.map(String);
+      } else {
+        newStaffIds = [];
       }
+    }
+
+    // If time/date changed or staff changed, notify affected staff
+    const scheduledChanged =
+      updatePayload.scheduled_at && typeof updatePayload.scheduled_at === 'string'
+        ? updatePayload.scheduled_at !== previousScheduledAt
+        : false;
+    if (scheduledChanged || newStaffIds !== null) {
+      const { data: jobRow } = await supabase
+        .from('jobs')
+        .select('id, scheduled_at, client_name')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle();
+      const when = jobRow?.scheduled_at
+        ? new Date(jobRow.scheduled_at as any).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+        : '';
+      const title = 'Job updated';
+      const body = `${(jobRow as any)?.client_name || 'Client'} — ${when}`;
+
+      // If staffIds were updated, notify new list; otherwise notify existing assignments
+      let targetStaffIds: string[] = [];
+      if (newStaffIds !== null) {
+        targetStaffIds = newStaffIds;
+      } else {
+        const { data: assignments } = await supabase
+          .from('job_assignments')
+          .select('staff_id')
+          .eq('job_id', id);
+        targetStaffIds = (assignments ?? []).map((a: any) => String(a.staff_id));
+      }
+
+      await Promise.all(
+        targetStaffIds.map((sid) =>
+          notifyStaff(sid, companyId, {
+            title,
+            body,
+            url: '/staff',
+            tag: `job-${id}`,
+          }),
+        ),
+      );
     }
 
     res.json({ success: true });

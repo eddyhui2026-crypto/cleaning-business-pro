@@ -49,13 +49,14 @@ async function sendToSubscription(subscription: webpush.PushSubscription, payloa
   }
 }
 
-/** Get all push subscriptions for a company (admin notifications). customer_id IS NULL. */
+/** Get all push subscriptions for a company (admin notifications). customer_id IS NULL AND staff_id IS NULL. */
 export async function getCompanySubscriptions(companyId: string): Promise<webpush.PushSubscription[]> {
   const { data, error } = await supabase
     .from('push_subscriptions')
     .select('subscription_json')
     .eq('company_id', companyId)
-    .is('customer_id', null);
+    .is('customer_id', null)
+    .is('staff_id', null);
   if (error) {
     console.error('[Push] getCompanySubscriptions:', error);
     return [];
@@ -77,6 +78,20 @@ export async function getCustomerSubscriptions(customerId: string, companyId: st
   return (data ?? []).map((r: any) => r.subscription_json as webpush.PushSubscription);
 }
 
+/** Get all push subscriptions for a staff member. */
+export async function getStaffSubscriptions(staffId: string, companyId: string): Promise<webpush.PushSubscription[]> {
+  const { data, error } = await supabase
+    .from('push_subscriptions')
+    .select('subscription_json')
+    .eq('staff_id', staffId)
+    .eq('company_id', companyId);
+  if (error) {
+    console.error('[Push] getStaffSubscriptions:', error);
+    return [];
+  }
+  return (data ?? []).map((r: any) => r.subscription_json as webpush.PushSubscription);
+}
+
 /** Notify company (admins) e.g. new pending booking or booking confirmed. */
 export async function notifyCompany(companyId: string, payload: PushPayload): Promise<void> {
   const subs = await getCompanySubscriptions(companyId);
@@ -93,15 +108,25 @@ export async function notifyCustomer(customerId: string, companyId: string, payl
   }
 }
 
-/** Save a push subscription (company-only or customer). */
+/** Notify staff (one staff member). */
+export async function notifyStaff(staffId: string, companyId: string, payload: PushPayload): Promise<void> {
+  const subs = await getStaffSubscriptions(staffId, companyId);
+  for (const sub of subs) {
+    await sendToSubscription(sub, payload);
+  }
+}
+
+/** Save a push subscription (company-only, customer, or staff). */
 export async function saveSubscription(
   companyId: string,
   subscription: webpush.PushSubscription,
-  customerId?: string | null
+  customerId?: string | null,
+  staffId?: string | null
 ): Promise<void> {
   const { error } = await supabase.from('push_subscriptions').insert({
     company_id: companyId,
     customer_id: customerId ?? null,
+    staff_id: staffId ?? null,
     subscription_json: subscription,
   });
   if (error) console.error('[Push] saveSubscription:', error);

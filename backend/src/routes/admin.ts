@@ -1287,7 +1287,7 @@ router.post('/push-subscription', requireAdmin, async (req: AuthRequest, res: Re
   }
   try {
     const { saveSubscription } = await import('../services/pushNotificationService');
-    await saveSubscription(companyId, subscription, null);
+    await saveSubscription(companyId, subscription, null, null);
     res.status(204).end();
   } catch (err: any) {
     console.error('Save admin push subscription:', err);

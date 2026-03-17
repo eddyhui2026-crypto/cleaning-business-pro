@@ -5,6 +5,7 @@ import { checkStaffLimit } from '../middleware/planLimits';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { distanceMeters, CLOCK_IN_RADIUS_METERS } from '../lib/distance';
 import { roundHoursForPayroll } from '../lib/payrollRound';
+import { saveSubscription } from '../services/pushNotificationService';
 
 const router = Router();
 
@@ -665,6 +666,28 @@ router.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response): Pro
     res.status(204).send();
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/** POST /api/staff/push-subscription/self — Staff device registers for job notifications. */
+router.post('/push-subscription/self', async (req: AuthRequest, res: Response): Promise<void> => {
+  const companyId = req.companyId;
+  const staffId = req.user?.id;
+  if (!companyId || !staffId) {
+    res.status(403).json({ error: 'No company or user' });
+    return;
+  }
+  const subscription = (req.body as any)?.subscription;
+  if (!subscription || !subscription.endpoint) {
+    res.status(400).json({ error: 'Subscription object with endpoint required' });
+    return;
+  }
+  try {
+    await saveSubscription(companyId, subscription, null, staffId);
+    res.status(204).end();
+  } catch (err: any) {
+    console.error('Save staff push subscription:', err);
+    res.status(500).json({ error: err?.message ?? 'Internal server error' });
   }
 });
 
