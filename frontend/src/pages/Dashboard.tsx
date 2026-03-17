@@ -82,7 +82,10 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   const teamScrollRef = useRef<HTMLDivElement>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
   const [pushLoading, setPushLoading] = useState(false);
-  const [pushStatus, setPushStatus] = useState<string | null>(null);
+  const [pushStatus, setPushStatus] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem('cf_push_admin_enabled') === '1' ? 'Enabled' : null;
+  });
   const [payrollThisMonth, setPayrollThisMonth] = useState<number>(0);
   const [payrollThisWeek, setPayrollThisWeek] = useState<number>(0);
   const [companyInfo, setCompanyInfo] = useState<{
@@ -403,7 +406,13 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   if (!hasDefaultPay) {
     setupHints.push({ message: 'Set default pay (hourly / % / fixed) in Payroll so we can calculate wages.', to: '/admin/attendance', label: 'Payroll' });
   }
-  setupHints.push({ message: 'Set default payment settings for invoices (e.g. bank details).', to: '/admin/invoices?open=payment-settings', label: 'Invoices & Payments' });
+  const hasPaymentSettings =
+    companyInfo?.default_payment_method ||
+    (companyInfo as any)?.default_payment_instructions ||
+    (companyInfo as any)?.default_payment_terms_days;
+  if (!hasPaymentSettings) {
+    setupHints.push({ message: 'Set default payment settings for invoices (e.g. bank details).', to: '/admin/invoices?open=payment-settings', label: 'Invoices & Payments' });
+  }
   if (staffList.length === 0) {
     setupHints.push({ message: 'Add your first staff so you can assign jobs and run payroll.', to: '/admin/staff', label: 'Staff' });
   }
@@ -564,7 +573,12 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
       const { data: { session } } = await supabase.auth.getSession();
       return { Authorization: `Bearer ${session?.access_token}` };
     });
-    setPushStatus(result.ok ? 'Enabled' : (result.error || 'Failed'));
+    const status = result.ok ? 'Enabled' : (result.error || 'Failed');
+    setPushStatus(status);
+    if (typeof window !== 'undefined') {
+      if (status === 'Enabled') window.localStorage.setItem('cf_push_admin_enabled', '1');
+      else window.localStorage.removeItem('cf_push_admin_enabled');
+    }
     setPushLoading(false);
   };
 
@@ -619,10 +633,23 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
                 type="button"
                 onClick={handleEnableNotifications}
                 disabled={pushLoading}
-                className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl text-emerald-400 hover:bg-emerald-500/20 flex items-center gap-1.5 text-xs font-medium min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center disabled:opacity-50 border border-emerald-500/40"
+                className={`relative p-2.5 sm:px-3 sm:py-2.5 rounded-xl flex items-center gap-1.5 text-xs font-medium min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center disabled:opacity-50 border ${
+                  pushStatus === 'Enabled'
+                    ? 'text-emerald-300 bg-emerald-500/15 border-emerald-400/70'
+                    : 'text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/40'
+                }`}
                 title={pushStatus === 'Enabled' ? 'Notifications on' : 'Enable notifications'}
               >
-                {pushLoading ? <span className="animate-pulse text-[10px]">…</span> : <Bell size={18} className="sm:w-4 sm:h-4" />}
+                {pushLoading ? (
+                  <span className="animate-pulse text-[10px]">…</span>
+                ) : (
+                  <>
+                    <Bell size={18} className="sm:w-4 sm:h-4" />
+                    {pushStatus === 'Enabled' && (
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(16,185,129,0.45)] sm:hidden" />
+                    )}
+                  </>
+                )}
                 <span className="hidden sm:inline">{pushStatus === 'Enabled' ? 'On' : 'Notify'}</span>
               </button>
               <button
