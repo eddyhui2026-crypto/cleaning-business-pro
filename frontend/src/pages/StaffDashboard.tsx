@@ -16,6 +16,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { StaffAttendancePanel } from '../components/StaffAttendancePanel';
+import { enablePushStaff } from '../lib/pushNotifications';
 
 export const StaffDashboard = () => {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -28,6 +29,11 @@ export const StaffDashboard = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [pushStatus, setPushStatus] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem('cf_push_staff_enabled') === '1' ? 'Enabled' : null;
+  });
+  const [pushLoading, setPushLoading] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -204,6 +210,22 @@ export const StaffDashboard = () => {
   const todayAssignedJobs = todayJobs.length;
   const todayIncompleteJobs = todayJobs.filter((j) => j.status !== 'completed').length;
 
+  const handleEnableNotifications = async () => {
+    setPushLoading(true);
+    setPushStatus(null);
+    const result = await enablePushStaff(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return { Authorization: session?.access_token ? `Bearer ${session.access_token}` : '' };
+    });
+    const status = result.ok ? 'Enabled' : result.error || 'Failed';
+    setPushStatus(status);
+    if (typeof window !== 'undefined') {
+      if (status === 'Enabled') window.localStorage.setItem('cf_push_staff_enabled', '1');
+      else window.localStorage.removeItem('cf_push_staff_enabled');
+    }
+    setPushLoading(false);
+  };
+
   if (loading) return (
     <div className="h-screen flex items-center justify-center bg-slate-950">
       <Loader2 className="animate-spin text-emerald-400" size={32} />
@@ -236,6 +258,27 @@ export const StaffDashboard = () => {
           >
             Timesheet
           </Link>
+          <button
+            type="button"
+            onClick={handleEnableNotifications}
+            disabled={pushLoading}
+            className={`relative p-2 rounded-xl text-xs font-medium min-w-[40px] min-h-[40px] flex items-center justify-center border ${
+              pushStatus === 'Enabled'
+                ? 'text-emerald-300 bg-emerald-500/15 border-emerald-400/70'
+                : 'text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/40'
+            }`}
+            title={pushStatus === 'Enabled' ? 'Notifications on' : 'Enable notifications'}
+          >
+            {pushLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <>
+                <span className="text-[10px] font-black tracking-widest uppercase">
+                  {pushStatus === 'Enabled' ? 'On' : 'Notify'}
+                </span>
+              </>
+            )}
+          </button>
           <button
             onClick={() => supabase.auth.signOut()}
             className="p-2 bg-slate-900 text-slate-400 rounded-xl hover:text-red-400 border border-slate-700 transition-colors"

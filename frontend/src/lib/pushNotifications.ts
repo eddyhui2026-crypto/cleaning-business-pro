@@ -4,7 +4,7 @@
 
 import { apiUrl } from './api';
 
-export type PushRole = 'customer' | 'admin';
+export type PushRole = 'customer' | 'admin' | 'staff';
 
 async function getVapidPublicKey(): Promise<string> {
   const res = await fetch(apiUrl('/api/booking/vapid-public-key'));
@@ -91,6 +91,49 @@ export async function enablePushAdmin(getAuthHeaders: () => Promise<HeadersInit>
   };
   const headers = await getAuthHeaders();
   const res = await fetch(apiUrl('/api/admin/push-subscription'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(headers as Record<string, string>) },
+    body: JSON.stringify({ subscription: subJson }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    return { ok: false, error: (data as any).error || 'Failed to save subscription' };
+  }
+  return { ok: true };
+}
+
+/** Request permission, subscribe, and POST subscription to backend (staff). Uses Supabase session. */
+export async function enablePushStaff(getAuthHeaders: () => Promise<HeadersInit>): Promise<{ ok: boolean; error?: string }> {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return { ok: false, error: 'Push not supported' };
+  }
+  const reg = await navigator.serviceWorker.ready;
+  let permission = Notification.permission;
+  if (permission === 'default') {
+    permission = await Notification.requestPermission();
+  }
+  if (permission !== 'granted') {
+    return { ok: false, error: 'Permission denied' };
+  }
+  const vapidKey = await getVapidPublicKey();
+  const subscription = await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(vapidKey),
+  });
+  const subJson = subscription.toJSON
+    ? subscription.toJSON()
+    : {
+        endpoint: subscription.endpoint,
+        keys:
+          subscription.getKey('p256dh') && subscription.getKey('auth')
+            ? {
+                p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')!))),
+                auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')!))),
+              }
+            : undefined,
+      };
+  const headers = await getAuthHeaders();
+  const res = await fetch(apiUrl('/api/staff/push-subscription/self'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(headers as Record<string, string>) },
     body: JSON.stringify({ subscription: subJson }),
