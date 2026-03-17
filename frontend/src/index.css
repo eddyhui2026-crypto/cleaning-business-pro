@@ -191,6 +191,23 @@ textarea:focus-visible {
   opacity: 0.85;
 }
 
+/* 6. Print-friendly report styling */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important; /* slate-900 */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide bottom nav and any elements marked no-print */
+  .AdminBottomNav,
+  .admin-bottom-nav,
+  .no-print {
+    display: none !important;
+  }
+}
+
 /* Day 視圖：詳細顯示 — 時間·時數、狀態、客人名、完整地址、全部員工，可換行 */
 .fc-event-content-day {
   display: flex;
