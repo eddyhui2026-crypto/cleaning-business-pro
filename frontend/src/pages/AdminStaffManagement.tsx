@@ -38,7 +38,9 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
   const [copied, setCopied] = useState(false);
   const [payModalStaff, setPayModalStaff] = useState<{ id: string; full_name: string; pay_type?: string | null; pay_hourly_rate?: number | null; pay_percentage?: number | null; pay_fixed_amount?: number | null } | null>(null);
   const [payTypeDraft, setPayTypeDraft] = useState<'' | 'hourly' | 'percentage' | 'fixed'>('hourly');
-  const [payValueDraft, setPayValueDraft] = useState('');
+  const [payHourlyDraft, setPayHourlyDraft] = useState('');
+  const [payPercentageDraft, setPayPercentageDraft] = useState('');
+  const [payFixedDraft, setPayFixedDraft] = useState('');
   const [savingPay, setSavingPay] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -152,10 +154,9 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
   const openPayModal = (staff: any) => {
     const pt = staff.pay_type && ['hourly', 'percentage', 'fixed'].includes(staff.pay_type) ? staff.pay_type : '';
     setPayTypeDraft(pt || '');
-    if (pt === 'hourly') setPayValueDraft(staff.pay_hourly_rate != null ? String(staff.pay_hourly_rate) : '');
-    else if (pt === 'percentage') setPayValueDraft(staff.pay_percentage != null ? String(staff.pay_percentage) : '');
-    else if (pt === 'fixed') setPayValueDraft(staff.pay_fixed_amount != null ? String(staff.pay_fixed_amount) : '');
-    else setPayValueDraft('');
+    setPayHourlyDraft(staff.pay_hourly_rate != null ? String(staff.pay_hourly_rate) : '');
+    setPayPercentageDraft(staff.pay_percentage != null ? String(staff.pay_percentage) : '');
+    setPayFixedDraft(staff.pay_fixed_amount != null ? String(staff.pay_fixed_amount) : '');
     setPayModalStaff({
       id: staff.id,
       full_name: staff.full_name || staff.name,
@@ -175,9 +176,9 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
       const body: any = {
         pay_type: payTypeDraft || null,
-        pay_hourly_rate: payTypeDraft === 'hourly' ? (payValueDraft === '' ? null : Number(payValueDraft)) : null,
-        pay_percentage: payTypeDraft === 'percentage' ? (payValueDraft === '' ? null : Number(payValueDraft)) : null,
-        pay_fixed_amount: payTypeDraft === 'fixed' ? (payValueDraft === '' ? null : Number(payValueDraft)) : null,
+        pay_hourly_rate: payHourlyDraft === '' ? null : Number(payHourlyDraft),
+        pay_percentage: payPercentageDraft === '' ? null : Number(payPercentageDraft),
+        pay_fixed_amount: payFixedDraft === '' ? null : Number(payFixedDraft),
       };
       const res = await fetch(apiUrl(`/api/staff/${payModalStaff.id}`), { method: 'PATCH', headers, body: JSON.stringify(body) });
       if (res.ok) {
@@ -433,10 +434,10 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
             </div>
             <p className="text-xs text-slate-500 mb-3">Used when a job doesn’t set its own pay. Otherwise company default applies.</p>
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-slate-300">Pay type</label>
+              <label className="block text-sm font-medium text-slate-300">Pay type (which rate to use)</label>
               <select
                 value={payTypeDraft}
-                onChange={(e) => { setPayTypeDraft((e.target.value || '') as '' | 'hourly' | 'percentage' | 'fixed'); setPayValueDraft(''); }}
+                onChange={(e) => { setPayTypeDraft((e.target.value || '') as '' | 'hourly' | 'percentage' | 'fixed'); }}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50"
               >
                 <option value="">Use company default</option>
@@ -444,24 +445,48 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
                 <option value="percentage">Percentage of job price</option>
                 <option value="fixed">Fixed amount per job</option>
               </select>
-              {payTypeDraft === 'hourly' && (
-                <>
+              <div className="mt-3 space-y-2">
+                <div>
                   <label className="block text-xs text-slate-400">Hourly rate (£)</label>
-                  <input type="number" min={0} step={0.01} value={payValueDraft} onChange={(e) => setPayValueDraft(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50" placeholder="e.g. 12.50" />
-                </>
-              )}
-              {payTypeDraft === 'percentage' && (
-                <>
-                  <label className="block text-xs text-slate-400">Percentage (%)</label>
-                  <input type="number" min={0} max={100} step={1} value={payValueDraft} onChange={(e) => setPayValueDraft(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50" placeholder="e.g. 40" />
-                </>
-              )}
-              {payTypeDraft === 'fixed' && (
-                <>
-                  <label className="block text-xs text-slate-400">Fixed amount (£)</label>
-                  <input type="number" min={0} step={0.01} value={payValueDraft} onChange={(e) => setPayValueDraft(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50" placeholder="e.g. 50" />
-                </>
-              )}
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={payHourlyDraft}
+                    onChange={(e) => setPayHourlyDraft(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50"
+                    placeholder="e.g. 12.50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400">Percentage of job (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={payPercentageDraft}
+                    onChange={(e) => setPayPercentageDraft(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50"
+                    placeholder="e.g. 40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400">Fixed amount per job (£)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={payFixedDraft}
+                    onChange={(e) => setPayFixedDraft(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50"
+                    placeholder="e.g. 50"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  We’ll use the rate that matches the selected <span className="font-semibold">Pay type</span>; the other values are saved for later if you switch method.
+                </p>
+              </div>
             </div>
             <div className="flex gap-2 mt-6">
               <button type="button" onClick={() => setPayModalStaff(null)} className="flex-1 py-2 border border-slate-600 rounded-xl text-slate-300 font-medium">Cancel</button>
