@@ -196,6 +196,58 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
   }
 });
 
+/**
+ * POST /api/staff/:id/reset-password — Admin resets a staff member's password
+ * Returns: { temporaryPassword, loginPhone }
+ */
+router.post('/:id/reset-password', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
+  const companyId = req.companyId;
+  const staffId = req.params.id;
+  if (!companyId) {
+    res.status(403).json({ error: 'No company associated with user' });
+    return;
+  }
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('id, company_id, full_name, phone, email, role')
+      .eq('id', staffId)
+      .eq('company_id', companyId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Reset staff password: load profile error', error);
+      res.status(500).json({ error: 'Failed to load staff profile', message: error.message });
+      return;
+    }
+    if (!profile) {
+      res.status(404).json({ error: 'Staff not found' });
+      return;
+    }
+    if (profile.role === 'admin') {
+      res.status(403).json({ error: 'Cannot reset admin password from this endpoint' });
+      return;
+    }
+
+    const tempPassword = generateTempPassword();
+    const authRes = await supabase.auth.admin.updateUserById(profile.id, { password: tempPassword });
+    if (authRes.error) {
+      console.error('Reset staff password: auth error', authRes.error);
+      res.status(500).json({ error: 'Failed to reset password', message: authRes.error.message });
+      return;
+    }
+
+    res.json({
+      temporaryPassword: tempPassword,
+      loginPhone: profile.phone,
+      full_name: profile.full_name || 'Staff',
+    });
+  } catch (err: any) {
+    console.error('Reset staff password error:', err);
+    res.status(500).json({ error: 'Internal server error', message: err?.message || String(err) });
+  }
+});
+
 // --- GPS Clock In / Clock Out ---
 
 /** POST /api/staff/clock-in — Staff clocks in for a job (GPS required, within 100m of job). */
