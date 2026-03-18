@@ -151,6 +151,43 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
     });
   };
 
+  const handleResetPassword = async (staff: any) => {
+    if (!window.confirm(`Reset password for ${staff.full_name || staff.name}?`)) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        alert('Your session has expired. Please sign in again.');
+        navigate('/login');
+        return;
+      }
+      const headers: HeadersInit = { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` };
+      const res = await fetch(apiUrl(`/api/staff/${staff.id}/reset-password`), { method: 'POST', headers });
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        alert(data.message || data.error || 'Failed to reset password');
+        return;
+      }
+      const pwd = data.temporaryPassword || data.password;
+      const phone = data.loginPhone || staff.phone;
+      const msgLines = [
+        `Phone (login): ${phone}`,
+        `Temporary password: ${pwd}`,
+        '',
+        'Ask your staff to log in at the Staff Login page and change their password after first login.',
+      ];
+      navigator.clipboard
+        .writeText(msgLines.join('\n'))
+        .then(() => {
+          alert('New temporary password generated and copied to clipboard.\n\n' + msgLines.join('\n'));
+        })
+        .catch(() => {
+          alert('New temporary password generated:\n\n' + msgLines.join('\n'));
+        });
+    } catch (err: any) {
+      alert(err?.message || 'Network error while resetting password');
+    }
+  };
+
   const openPayModal = (staff: any) => {
     const pt = staff.pay_type && ['hourly', 'percentage', 'fixed'].includes(staff.pay_type) ? staff.pay_type : '';
     setPayTypeDraft(pt || '');
@@ -329,7 +366,7 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
                   <strong>Phone (login):</strong> {lastCreated.loginPhone}
                 </p>
                 <p className="text-[10px] text-emerald-100 mb-3">
-                  <strong>Default password:</strong> {lastCreated.defaultPassword}
+                  <strong>Temporary password:</strong> {lastCreated.temporaryPassword}
                 </p>
                 <p className="text-[10px] text-emerald-100 mb-3">
                   Staff sign in at Staff Login with this phone and password. They can change it after first login.
