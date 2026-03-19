@@ -30,18 +30,56 @@ router.post('/stripe', async (req: Request, res: Response) => {
       const companyId = session.metadata?.companyId;
 
       if (companyId) {
-        // 更新資料庫中的訂閱狀態
-        const { error } = await supabase
-          .from('companies')
-          .update({ subscription_status: 'active' })
-          .eq('id', companyId);
+        // Stripe 訂閱試用期的完結時間（與舊有 companies.trial_ends_at 無關，避免手動改 SQL 後出現「俾咗錢仍當試用過期」）
+        const updatePayload: Record<string, unknown> = { subscription_status: 'active' };
+        try {
+          const subId =
+            typeof session.subscription === 'string'
+              ? session.subscription
+              : session.subscription && typeof session.subscription === 'object'
+                ? (session.subscription as Stripe.Subscription).id
+                : null;
+          if (subId) {
+            const sub = await stripe.subscriptions.retrieve(subId);
+            if (sub.trial_end) {
+              updatePayload.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
+            }
+          }
+        } catch (e) {
+          console.error('⚠️ checkout.session.completed: could not sync trial_ends_at from Stripe:', e);
+        }
+
+        const { error } = await supabase.from('companies').update(updatePayload).eq('id', companyId);
 
         if (error) {
           console.error(`❌ DB Update Failed for Company ${companyId}:`, error);
           return res.status(500).json({ error: 'Database update failed' });
         }
         console.log(`✅ Subscription Activated for Company: ${companyId}`);
+      } else {
+        console.log('⚠️ checkout.session.completed: missing session.metadata.companyId');
       }
+      break;
+    }
+
+    case 'customer.subscription.updated':
+    case 'customer.subscription.created': {
+      const sub = event.data.object as Stripe.Subscription;
+      const companyId = (sub.metadata as Record<string, string> | undefined)?.companyId;
+      if (!companyId) {
+        console.log(`⚠️ ${event.type}: no companyId on subscription metadata`);
+        break;
+      }
+      const stripeStatus = sub.status;
+      const paidLike = ['active', 'trialing', 'past_due'].includes(stripeStatus);
+      const updatePayload: Record<string, unknown> = {
+        subscription_status: paidLike ? 'active' : 'inactive',
+      };
+      if (sub.trial_end) {
+        updatePayload.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
+      }
+      await supabase.from('companies').update(updatePayload).eq('id', companyId);
+      console.log(`✅ Synced subscription ${stripeStatus} → DB for company ${companyId}`);
       break;
     }
 

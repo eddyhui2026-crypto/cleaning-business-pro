@@ -108,10 +108,12 @@ export default function App() {
             .select('subscription_status, trial_ends_at')
             .eq('id', profile.company_id)
             .maybeSingle();
-          const status = company?.subscription_status || 'trialing';
+          // 付費後應為 active（由 webhook 寫入）。勿用預設 trialing，否則試用過期會令已付費用戶仍被鎖。
+          const status = company?.subscription_status ?? null;
           const trialEndsAt = company?.trial_ends_at ? new Date(company.trial_ends_at) : null;
           const trialingActive = status === 'trialing' && trialEndsAt && trialEndsAt > new Date();
-          setSubStatus(status === 'active' || trialingActive ? 'active' : 'inactive');
+          const paidActive = status === 'active';
+          setSubStatus(paidActive || trialingActive ? 'active' : 'inactive');
         } else {
           setSubStatus('inactive');
         }

@@ -73,6 +73,9 @@ export const createCheckoutSession = async (
       },
       subscription_data: {
         trial_period_days: CHECKOUT_TRIAL_DAYS,
+        metadata: {
+          companyId,
+        },
       },
       discounts,
     });
