@@ -41,6 +41,7 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { DataAndCookiesPolicy } from './pages/DataAndCookiesPolicy';
 import { Signup } from './pages/Signup';
+import { SupportReportsPage } from './pages/SupportReportsPage';
 
 /** Redirects to /billing when subscription is inactive; otherwise renders children. */
 function AdminRoute({
@@ -77,6 +78,7 @@ const ADMIN_ROUTES: Array<{
   { path: '/admin/settings', element: (companyId) => <Settings companyId={companyId} /> },
   { path: '/admin/settings/checklists', element: () => <SettingsChecklists /> },
   { path: '/admin/reports', element: (companyId) => <AdminReportsPage companyId={companyId} /> },
+  { path: '/admin/support-reports', element: () => <SupportReportsPage /> },
 ];
 
 export default function App() {
