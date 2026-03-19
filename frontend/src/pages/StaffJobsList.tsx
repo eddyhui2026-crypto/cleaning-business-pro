@@ -106,37 +106,29 @@ export function StaffJobsList() {
                   {j.start_time && <span>{j.start_time}</span>}
                   <span
                     className={`px-2 py-0.5 rounded-full font-bold uppercase text-[10px] ${
-                      j.status === 'accepted'
+                      (j.status === 'accepted' || j.status === 'assigned')
                         ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/40'
                         : j.status === 'declined'
                         ? 'bg-rose-500/15 text-rose-300 border border-rose-400/40'
                         : 'bg-amber-500/10 text-amber-300 border border-amber-400/40'
                     }`}
                   >
-                    {j.status}
+                    {j.status === 'assigned' ? 'accepted' : j.status}
                   </span>
                 </div>
                 {j.status === 'assigned' && (
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleResponse(j.assignment_id, 'accepted')}
-                      disabled={responding !== null}
-                      className="flex-1 py-2.5 bg-emerald-500 text-slate-950 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-400 disabled:opacity-50"
-                    >
-                      {responding === j.assignment_id ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
-                      Accept
-                    </button>
-                    <button
                       onClick={() => handleResponse(j.assignment_id, 'declined')}
                       disabled={responding !== null}
-                      className="flex-1 py-2.5 bg-slate-900 text-slate-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-slate-800 disabled:opacity-50 border border-slate-700"
+                      className="flex-1 py-2.5 bg-rose-500/10 text-rose-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-rose-500/20 disabled:opacity-50 border border-rose-400/30"
                     >
                       {responding === j.assignment_id ? <Loader2 className="animate-spin" size={16} /> : <XCircle size={16} />}
                       Decline
                     </button>
                   </div>
                 )}
-                {j.status === 'accepted' && (
+                {(j.status === 'accepted' || j.status === 'assigned') && (
                   <Link
                     to={`/staff/job/${j.job_id}`}
                     className="block w-full mt-3 py-2.5 bg-emerald-500 text-slate-950 text-center rounded-xl font-bold text-sm hover:bg-emerald-400"

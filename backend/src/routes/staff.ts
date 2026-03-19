@@ -300,11 +300,12 @@ router.post('/clock-in', requireStaffOrSupervisor, async (req: AuthRequest, res:
       return;
     }
 
-    // Only accepted assignments are allowed to clock in.
-    if (assignment.status !== 'accepted') {
+    // Default behavior: assignments are treated as accepted unless staff explicitly declined.
+    // This keeps payroll/order safe by preventing clock-in only for declined jobs.
+    if (assignment.status === 'declined') {
       res
         .status(403)
-        .json({ success: false, message: 'You must accept this job before you can clock in.' });
+        .json({ success: false, message: 'You declined this job. You cannot clock in.' });
       return;
     }
 
