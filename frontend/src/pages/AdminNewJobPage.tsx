@@ -58,6 +58,10 @@ interface Staff {
   id: string;
   full_name: string;
   name?: string;
+  pay_type?: string | null;
+  pay_hourly_rate?: number | null;
+  pay_percentage?: number | null;
+  pay_fixed_amount?: number | null;
 }
 
 function parsePreferredDate(str: string): Date | null {
@@ -88,6 +92,12 @@ export function AdminNewJobPage({ companyId }: AdminNewJobPageProps) {
   const [customerId, setCustomerId] = useState('');
   const [services, setServices] = useState<CatalogService[]>([]);
   const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [companyPay, setCompanyPay] = useState<{
+    default_pay_type?: string | null;
+    default_hourly_rate?: number | null;
+    default_pay_percentage?: number | null;
+    default_fixed_pay?: number | null;
+  } | null>(null);
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [customerSearch, setCustomerSearch] = useState('');
   const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
@@ -140,16 +150,18 @@ export function AdminNewJobPage({ companyId }: AdminNewJobPageProps) {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const headers = { Authorization: `Bearer ${session?.access_token}` };
-        const [custRes, svcRes, staffRes, checkRes] = await Promise.all([
+        const [custRes, svcRes, staffRes, checkRes, companiesRes] = await Promise.all([
           fetch(apiUrl('/api/admin/customers'), { headers }),
           fetch(apiUrl('/api/admin/services'), { headers }),
           fetch(apiUrl('/api/staff'), { headers }),
           fetch(apiUrl('/api/companies/checklist-templates'), { headers }),
+          fetch(apiUrl('/api/companies'), { headers }),
         ]);
         const custData = await custRes.json().then((d: any) => (Array.isArray(d) ? d : [])).catch(() => []);
         const svcData = await svcRes.json().catch(() => []);
         const staffData = await staffRes.json().catch(() => []);
         const checkData = await checkRes.json().catch(() => ({}));
+        const companiesData = await companiesRes.json().catch(() => ({}));
         setCustomers(custData);
         setServices(Array.isArray(svcData) ? svcData : []);
         setStaffList(Array.isArray(staffData) ? staffData : []);
@@ -157,9 +169,16 @@ export function AdminNewJobPage({ companyId }: AdminNewJobPageProps) {
           ? checkData.templates
           : DEFAULT_CHECKLIST_TEMPLATES.map((t) => ({ ...t, tasks: [...t.tasks] }));
         setChecklistTemplates(templates);
+        setCompanyPay({
+          default_pay_type: companiesData?.default_pay_type ?? null,
+          default_hourly_rate: companiesData?.default_hourly_rate ?? null,
+          default_pay_percentage: companiesData?.default_pay_percentage ?? null,
+          default_fixed_pay: companiesData?.default_fixed_pay ?? null,
+        });
       } catch {
         setServices([]);
         setStaffList([]);
+        setCompanyPay(null);
       } finally {
         setLoading(true);
       }
@@ -413,27 +432,106 @@ export function AdminNewJobPage({ companyId }: AdminNewJobPageProps) {
 
   const { staffPay, profit } = useMemo(() => {
     const revenue = effectiveTotal;
-    let pay: number | null = null;
+    if (staffIds.length === 0) return { staffPay: null as number | null, profit: null as number | null };
+
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    let totalStaffPay: number | null = null;
+
+    // Case 1: Cleaner pay is explicitly set on THIS job (job pay_type is provided).
     if (payType === 'hourly' && payHourlyRate.trim() !== '') {
       const rate = Number(payHourlyRate);
-      if (Number.isFinite(rate) && rate >= 0) {
-        pay = Math.round(totalHours * rate * staffIds.length * 100) / 100;
-      }
+      if (Number.isFinite(rate) && rate >= 0) totalStaffPay = round2(totalHours * rate * staffIds.length);
     } else if (payType === 'percentage' && payPercentage.trim() !== '') {
       const pct = Number(payPercentage);
       if (Number.isFinite(pct) && pct >= 0) {
-        pay = Math.round(revenue * (pct / 100) * 100) / 100;
+        // For percentage coming from job settings, backend splits per staff but total still = revenue * pct%
+        totalStaffPay = round2(revenue * (pct / 100));
       }
     } else if (payType === 'fixed' && payFixedAmount.trim() !== '') {
       const fixed = Number(payFixedAmount);
       if (Number.isFinite(fixed) && fixed >= 0) {
-        pay = Math.round(fixed * 100) / 100;
+        // For fixed coming from job settings, backend splits per staff but total still = fixed amount
+        totalStaffPay = round2(fixed);
       }
     }
-    const staffPay = pay;
-    const profit = staffPay != null ? Math.round((revenue - staffPay) * 100) / 100 : null;
-    return { staffPay, profit };
-  }, [effectiveTotal, payType, payHourlyRate, payPercentage, payFixedAmount, totalHours, staffIds.length]);
+
+    // Case 2: "Use company default" (no job pay_type sent) => backend resolves per staff:
+    //   job pay_type missing -> staff.profile.pay_type if set, otherwise company.default_pay_*
+    if (payType === '' && totalStaffPay == null) {
+      const companyTypeRaw = companyPay?.default_pay_type ?? 'hourly';
+      const companyType = ['hourly', 'percentage', 'fixed'].includes(companyTypeRaw) ? companyTypeRaw : 'hourly';
+
+      const selectedStaff = staffList.filter((s) => staffIds.includes(s.id));
+      if (selectedStaff.length === 0) {
+        totalStaffPay = null;
+      } else {
+        let total: number | null = 0;
+
+        for (const s of selectedStaff) {
+          if (total == null) break;
+
+          const profileTypeRaw = s.pay_type;
+          const resolvedType =
+            profileTypeRaw && ['hourly', 'percentage', 'fixed'].includes(profileTypeRaw) ? profileTypeRaw : companyType;
+
+          if (resolvedType === 'hourly') {
+            const rateRaw = s.pay_hourly_rate ?? companyPay?.default_hourly_rate;
+            if (rateRaw == null) {
+              total = null;
+              break;
+            }
+            const rate = Number(rateRaw);
+            if (!Number.isFinite(rate) || rate < 0) {
+              total = null;
+              break;
+            }
+            total += round2(totalHours * rate);
+          } else if (resolvedType === 'percentage') {
+            const pctRaw = s.pay_percentage ?? companyPay?.default_pay_percentage;
+            if (pctRaw == null) {
+              total = null;
+              break;
+            }
+            const pct = Number(pctRaw);
+            if (!Number.isFinite(pct) || pct < 0) {
+              total = null;
+              break;
+            }
+            total += round2(revenue * (pct / 100));
+          } else {
+            // fixed
+            const fixedRaw = s.pay_fixed_amount ?? companyPay?.default_fixed_pay;
+            if (fixedRaw == null) {
+              total = null;
+              break;
+            }
+            const fixed = Number(fixedRaw);
+            if (!Number.isFinite(fixed) || fixed < 0) {
+              total = null;
+              break;
+            }
+            total += round2(fixed);
+          }
+        }
+
+        totalStaffPay = total != null ? round2(total) : null;
+      }
+    }
+
+    const profit = totalStaffPay != null ? round2(revenue - totalStaffPay) : null;
+    return { staffPay: totalStaffPay, profit };
+  }, [
+    effectiveTotal,
+    payType,
+    payHourlyRate,
+    payPercentage,
+    payFixedAmount,
+    totalHours,
+    staffIds,
+    staffList,
+    companyPay,
+  ]);
 
   const addService = (s: CatalogService) => {
     setLineItems((prev) => [...prev, newLineItemFromCatalog(s, totalHours)]);
