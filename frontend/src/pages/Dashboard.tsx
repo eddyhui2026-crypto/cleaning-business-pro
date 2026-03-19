@@ -599,23 +599,41 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
     setPushLoading(false);
   };
 
-  const REPORT_EMAIL = 'eddyhui2026@gmail.com';
   const handleReportSubmit = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    const userEmail = session?.user?.email ?? 'Not signed in';
-    const subject = `[CleanPro Report] ${reportCategory === 'bug' ? 'Bug' : reportCategory === 'feature' ? 'Feature request' : 'Other'}${reportSubject ? `: ${reportSubject}` : ''}`;
-    const body = [
-      reportMessage || '(No message)',
-      '',
-      '---',
-      `Reported by: ${userEmail}`,
-      `Time: ${new Date().toISOString()}`,
-    ].join('\n');
-    const mailto = `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailto;
-    setReportOpen(false);
-    setReportSubject('');
-    setReportMessage('');
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      toast.error('Session expired. Please sign in again.');
+      return;
+    }
+
+    try {
+      const res = await fetch(apiUrl('/api/support/report'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          category: reportCategory,
+          subject: reportSubject || null,
+          message: reportMessage,
+          context_url: typeof window !== 'undefined' ? window.location.href : null,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({} as any));
+        throw new Error(err?.message || err?.error || 'Failed to submit report');
+      }
+
+      toast.success('Report sent to support.');
+      setReportOpen(false);
+      setReportSubject('');
+      setReportMessage('');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to submit report');
+    }
   };
 
   return (
@@ -1365,7 +1383,9 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
             <h3 className="text-xl font-black text-slate-50 mb-1 flex items-center gap-2">
               <AlertCircle className="text-emerald-400" size={24} /> Report a problem
             </h3>
-            <p className="text-slate-400 text-sm mb-4">Describe the issue and we&apos;ll get back to you. Your message will be sent to support ({REPORT_EMAIL}).</p>
+            <p className="text-slate-400 text-sm mb-4">
+              Describe the issue and we&apos;ll get back to you. This report will be sent to support automatically.
+            </p>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Category</label>
@@ -1402,7 +1422,9 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
             </div>
             <div className="flex gap-3 mt-6">
               <button type="button" onClick={() => setReportOpen(false)} className="flex-1 py-3 rounded-xl border border-slate-600 text-slate-300 font-bold hover:bg-slate-800">Cancel</button>
-              <button type="button" onClick={handleReportSubmit} className="flex-1 py-3 rounded-xl bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400">Open email</button>
+              <button type="button" onClick={handleReportSubmit} className="flex-1 py-3 rounded-xl bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400">
+                Send report
+              </button>
             </div>
           </div>
         </div>

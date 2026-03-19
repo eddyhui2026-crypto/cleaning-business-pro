@@ -20,6 +20,7 @@ import quotesRouter from './routes/quotes';
 import customerRouter from './routes/customer';
 import bookingRouter from './routes/booking';
 import internalRouter from './routes/internal';
+import supportRouter from './routes/support';
 
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
@@ -69,6 +70,8 @@ app.use('/api/customer', customerRouter);
 app.use('/api/booking', bookingRouter);
 // Internal API (secret key only, no JWT): e.g. create-trial-account
 app.use('/api/internal', internalRouter);
+// Support reports (bug/feature) - requires JWT + company resolution
+app.use('/api/support', apiAuth, supportRouter);
 
 // Global error handler (optional)
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
