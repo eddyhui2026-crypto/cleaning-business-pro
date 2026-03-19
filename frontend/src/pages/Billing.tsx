@@ -10,6 +10,18 @@ interface BillingProps {
 
 export const Billing = ({ companyId, email }: BillingProps) => {
   const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState<'small' | 'medium' | 'large'>('medium');
+  const [interval, setInterval] = useState<'monthly' | 'yearly'>('monthly');
+
+  const PRICE_TABLE = {
+    small: { monthly: 19, yearly: 190 },
+    medium: { monthly: 39, yearly: 390 },
+    large: { monthly: 59, yearly: 590 },
+  } as const;
+
+  const currentPrice = PRICE_TABLE[plan][interval];
+  const monthlyEquivalent =
+    interval === 'yearly' ? Math.round((PRICE_TABLE[plan].yearly / 12) * 100) / 100 : PRICE_TABLE[plan].monthly;
 
   const handleUpgrade = async () => {
     setLoading(true);
@@ -26,7 +38,7 @@ export const Billing = ({ companyId, email }: BillingProps) => {
       const response = await fetch(apiUrl('/api/billing/create-checkout-session'), {
         method: 'POST',
         headers,
-        body: JSON.stringify({ email: email ?? session.user?.email }),
+        body: JSON.stringify({ email: email ?? session.user?.email, plan, interval }),
       });
 
       const data = await response.json();
@@ -50,10 +62,57 @@ export const Billing = ({ companyId, email }: BillingProps) => {
         </div>
 
         <div className="p-8">
-          <div className="flex justify-center items-baseline gap-1 mb-2">
-            <span className="text-4xl font-black text-slate-900">From £19</span>
-            <span className="text-slate-500 font-medium">/ month</span>
+          <div className="mb-4 inline-flex rounded-xl bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setInterval('monthly')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                interval === 'monthly' ? 'bg-white shadow text-slate-900' : 'text-slate-600'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setInterval('yearly')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                interval === 'yearly' ? 'bg-white shadow text-slate-900' : 'text-slate-600'
+              }`}
+            >
+              Yearly (2 months off)
+            </button>
           </div>
+
+          <div className="mb-4 grid grid-cols-3 gap-2">
+            {([
+              ['small', '1-10 staff'],
+              ['medium', '11-20 staff'],
+              ['large', '21-30 staff'],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setPlan(key)}
+                className={`rounded-xl border px-2 py-2 text-[11px] font-semibold ${
+                  plan === key
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex justify-center items-baseline gap-1 mb-2">
+            <span className="text-4xl font-black text-slate-900">£{currentPrice}</span>
+            <span className="text-slate-500 font-medium">/ {interval === 'monthly' ? 'month' : 'year'}</span>
+          </div>
+          {interval === 'yearly' && (
+            <p className="text-[11px] text-center text-emerald-700 font-medium mb-2">
+              Equivalent to about £{monthlyEquivalent}/month
+            </p>
+          )}
           <p className="text-xs text-slate-500 text-center mb-4">
             All plans include scheduling, CRM, staff app, GPS check‑ins, online booking, invoices and PDF reports.
           </p>

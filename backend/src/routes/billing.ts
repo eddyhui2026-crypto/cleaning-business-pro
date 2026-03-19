@@ -21,9 +21,11 @@ router.post('/create-checkout-session', async (req: AuthRequest, res: Response):
 
   // plan can be 'small' | 'medium' | 'large' from frontend; default handled in service
   const plan = typeof req.body.plan === 'string' ? req.body.plan : null;
+  // interval can be 'monthly' | 'yearly'
+  const interval = req.body.interval === 'yearly' ? 'yearly' : 'monthly';
 
   try {
-    const session = await createCheckoutSession(companyId, email, plan);
+    const session = await createCheckoutSession(companyId, email, plan, interval);
     res.json({ url: session.url });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

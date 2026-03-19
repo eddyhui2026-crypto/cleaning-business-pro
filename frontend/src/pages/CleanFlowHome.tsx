@@ -8,6 +8,7 @@ const TRIAL_URL = '/signup';
 
 export function CleanFlowHome() {
   const [testimonialPage, setTestimonialPage] = useState(0);
+  const [pricingInterval, setPricingInterval] = useState<'monthly' | 'yearly'>('monthly');
 
   const testimonials = [
     {
@@ -44,6 +45,11 @@ export function CleanFlowHome() {
 
   const totalTestimonialPages = Math.ceil(testimonials.length / 3);
   const visibleTestimonials = testimonials.slice(testimonialPage * 3, testimonialPage * 3 + 3);
+  const homePrices = {
+    small: { monthly: 19, yearly: 190 },
+    medium: { monthly: 39, yearly: 390 },
+    large: { monthly: 59, yearly: 590 },
+  } as const;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
@@ -356,12 +362,35 @@ export function CleanFlowHome() {
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
               <span>Launch offer · 14-day free trial + first 3 months 30% off</span>
             </div>
+            <div className="flex justify-center">
+              <div className="inline-flex rounded-xl bg-slate-900/70 border border-white/10 p-1">
+                <button
+                  type="button"
+                  onClick={() => setPricingInterval('monthly')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                    pricingInterval === 'monthly' ? 'bg-emerald-400 text-slate-950' : 'text-slate-300'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPricingInterval('yearly')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                    pricingInterval === 'yearly' ? 'bg-emerald-400 text-slate-950' : 'text-slate-300'
+                  }`}
+                >
+                  Yearly (2 months off)
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
             <PricingCard
               name="Small teams (1–10 staff)"
-              price="£19"
+              price={homePrices.small[pricingInterval]}
+              interval={pricingInterval}
               description="For solo cleaners and small teams getting organised. All features included."
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
@@ -379,7 +408,8 @@ export function CleanFlowHome() {
             />
             <PricingCard
               name="Growing teams (11–20 staff)"
-              price="£39"
+              price={homePrices.medium[pricingInterval]}
+              interval={pricingInterval}
               description="For growing companies running daily routes with multiple teams. All features included."
               popular
               highlights={[
@@ -398,7 +428,8 @@ export function CleanFlowHome() {
             />
             <PricingCard
               name="Established teams (21–30 staff)"
-              price="£59"
+              price={homePrices.large[pricingInterval]}
+              interval={pricingInterval}
               description="For established cleaning businesses that need full visibility. All features included."
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
@@ -581,13 +612,15 @@ function WorkflowStep({ step, title, description }: WorkflowStepProps) {
 
 interface PricingCardProps {
   name: string;
-  price: string;
+  price: number;
+  interval: 'monthly' | 'yearly';
   description: string;
   highlights: string[];
   popular?: boolean;
 }
 
-function PricingCard({ name, price, description, highlights, popular }: PricingCardProps) {
+function PricingCard({ name, price, interval, description, highlights, popular }: PricingCardProps) {
+  const monthlyEquivalent = interval === 'yearly' ? Math.round((price / 12) * 100) / 100 : null;
   return (
     <div
       className={`flex flex-col rounded-3xl border bg-slate-950/50 p-5 ${
@@ -604,9 +637,12 @@ function PricingCard({ name, price, description, highlights, popular }: PricingC
       <h3 className="text-sm font-semibold text-slate-50">{name}</h3>
       <p className="mt-1 text-xs text-slate-400">{description}</p>
       <div className="mt-4 flex items-baseline gap-1">
-        <span className="text-2xl font-black text-slate-50">{price}</span>
-        <span className="text-xs text-slate-400">/month</span>
+        <span className="text-2xl font-black text-slate-50">£{price}</span>
+        <span className="text-xs text-slate-400">/{interval === 'monthly' ? 'month' : 'year'}</span>
       </div>
+      {monthlyEquivalent != null && (
+        <p className="mt-1 text-[11px] text-emerald-300">~£{monthlyEquivalent}/month billed yearly</p>
+      )}
       <ul className="mt-4 space-y-1.5 text-xs text-slate-200/90">
         {highlights.map((h) => (
           <li key={h} className="flex items-center gap-2">
