@@ -86,6 +86,10 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
     if (typeof window === 'undefined') return null;
     return window.localStorage.getItem('cf_push_admin_enabled') === '1' ? 'Enabled' : null;
   });
+  const [adminPasswordChanged] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('cf_admin_password_changed') === '1';
+  });
   const [payrollThisMonth, setPayrollThisMonth] = useState<number>(0);
   const [payrollThisWeek, setPayrollThisWeek] = useState<number>(0);
   const [companyInfo, setCompanyInfo] = useState<{
@@ -407,6 +411,9 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   const setupHints: { message: string; to?: string; label: string; action?: 'enable_notify' }[] = [];
   if (!companyInfo?.name || companyInfo.name === 'My Cleaning Business' || companyInfo.name.trim() === '') {
     setupHints.push({ message: 'Set your company name so it appears on invoices and reports.', to: '/admin/settings', label: 'Settings' });
+  }
+  if (!adminPasswordChanged) {
+    setupHints.push({ message: 'Update your admin login password for better security.', to: '/admin/settings', label: 'Change password' });
   }
   const hasDefaultPay = companyInfo?.default_pay_type && (
     (companyInfo.default_pay_type === 'hourly' && companyInfo.default_hourly_rate != null) ||

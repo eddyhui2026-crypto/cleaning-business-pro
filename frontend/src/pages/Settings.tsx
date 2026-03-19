@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, Save, Image as ImageIcon, Loader2, CheckCircle2, Globe, Package, Download, ClipboardList, Users, ChevronLeft, Shield } from 'lucide-react';
+import { Building2, Mail, Save, Image as ImageIcon, Loader2, CheckCircle2, Globe, Package, Download, ClipboardList, Users, ChevronLeft, Shield, KeyRound, Lock } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
 import { useToast } from '../context/ToastContext';
@@ -30,6 +30,10 @@ export const Settings = ({ companyId }: SettingsProps) => {
   const [message, setMessage] = useState('');
   const [catalogEmpty, setCatalogEmpty] = useState<boolean | null>(null);
   const [importingCatalog, setImportingCatalog] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [company, setCompany] = useState<CompanyData>({
     id: '',
     name: '',
@@ -206,6 +210,38 @@ export const Settings = ({ companyId }: SettingsProps) => {
       alert("Save failed: " + err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMessage(null);
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordMessage({ type: 'error', text: 'New password must be at least 6 characters.' });
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordMessage({ type: 'error', text: 'New password and confirm do not match.' });
+      return;
+    }
+
+    setPasswordSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.newPassword });
+      if (error) {
+        setPasswordMessage({ type: 'error', text: error.message });
+        return;
+      }
+      setPasswordMessage({ type: 'success', text: 'Password updated successfully.' });
+      setPasswordForm({ newPassword: '', confirmPassword: '' });
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('cf_admin_password_changed', '1');
+      }
+    } catch (err: any) {
+      setPasswordMessage({ type: 'error', text: err?.message || 'Failed to update password.' });
+    } finally {
+      setPasswordSaving(false);
     }
   };
 
@@ -401,6 +437,65 @@ export const Settings = ({ companyId }: SettingsProps) => {
             >
               <Package size={18} /> Open Service catalog
             </button>
+          </div>
+
+          <div className="bg-slate-900/80 p-6 rounded-[2.5rem] border border-slate-800">
+            <h3 className="text-[10px] font-black uppercase text-slate-300 tracking-widest mb-2 flex items-center gap-2">
+              <KeyRound size={14} /> Security
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">Change your admin login password.</p>
+
+            <button
+              type="button"
+              onClick={() => setShowChangePassword(v => !v)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-xl font-medium hover:bg-emerald-500/30 transition-colors"
+            >
+              <Lock size={18} /> {showChangePassword ? 'Hide' : 'Change password'}
+            </button>
+
+            {showChangePassword && (
+              <form onSubmit={handleChangePassword} className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-300 ml-2 tracking-widest">
+                    New password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 font-bold text-slate-50 placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-400 transition-all outline-none"
+                    placeholder="Enter new password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-300 ml-2 tracking-widest">
+                    Confirm new password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 font-bold text-slate-50 placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-400 transition-all outline-none"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+
+                {passwordMessage && (
+                  <p className={`text-xs font-bold ${passwordMessage.type === 'success' ? 'text-emerald-300' : 'text-rose-300'} `}>
+                    {passwordMessage.text}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={passwordSaving}
+                  className="bg-emerald-400 text-slate-950 px-10 py-4 rounded-3xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-emerald-500/40 hover:bg-emerald-300 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {passwordSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  {passwordSaving ? 'Saving...' : 'Update password'}
+                </button>
+              </form>
+            )}
           </div>
 
           <div className="bg-slate-900/80 p-6 rounded-[2.5rem] border border-slate-800">

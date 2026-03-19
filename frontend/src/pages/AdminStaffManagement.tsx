@@ -16,6 +16,7 @@ import {
   Check,
   Wallet,
   X,
+  KeyRound,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -447,6 +448,14 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
                       title="Set pay"
                     >
                       <Wallet size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleResetPassword(staff)}
+                      className="p-2.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all"
+                      title="Reset password"
+                    >
+                      <KeyRound size={18} />
                     </button>
                     <button
                       onClick={() => handleDeleteStaff(staff.id)}
