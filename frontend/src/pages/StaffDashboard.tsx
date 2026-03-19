@@ -322,7 +322,7 @@ export const StaffDashboard = () => {
         {user && (
           <StaffAttendancePanel
             staffId={user.id}
-            jobs={todayJobs.length > 0 ? todayJobs : jobs}
+            jobs={todayJobs}
             onClockChange={() => {}}
           />
         )}
@@ -375,7 +375,7 @@ export const StaffDashboard = () => {
             </form>
           )}
         </div>
-        {jobs.length === 0 ? (
+        {todayJobs.length === 0 ? (
           <div className="text-center py-24 bg-slate-900/80 rounded-[3rem] border-2 border-dashed border-slate-700">
             <p className="text-slate-500 font-black uppercase tracking-tighter text-xl">
               No missions
@@ -383,7 +383,7 @@ export const StaffDashboard = () => {
               assigned today
             </p>
           </div>
-        ) : jobs.map(job => (
+        ) : todayJobs.map(job => (
           <div
             key={job.id}
             className={`bg-slate-900/80 rounded-[2.5rem] p-6 shadow-xl shadow-slate-950/80 border transition-all ${
@@ -411,7 +411,8 @@ export const StaffDashboard = () => {
               </div>
             </div>
 
-            {/* BEFORE SECTION */}
+            {/* BEFORE SECTION (hide when completed to reduce height) */}
+            {job.status !== 'completed' && (
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1">
@@ -442,8 +443,10 @@ export const StaffDashboard = () => {
                 )}
               </div>
             </div>
+            )}
 
-            {/* AFTER SECTION */}
+            {/* AFTER SECTION (hide when completed to reduce height) */}
+            {job.status !== 'completed' && (
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[10px] font-black text-emerald-300 uppercase tracking-[0.2em] flex items-center gap-1">
@@ -475,6 +478,7 @@ export const StaffDashboard = () => {
               </div>
               <p className="text-[9px] text-slate-500 mt-2 italic">{DATA_RETENTION_SHORT}</p>
             </div>
+            )}
 
             {/* NAVIGATION BUTTON */}
             <button 

@@ -15,7 +15,13 @@ interface AttendanceRecord {
 
 interface StaffAttendancePanelProps {
   staffId: string;
-  jobs: Array<{ id: string; client_name: string }>;
+  jobs: Array<{
+    id: string;
+    client_name: string;
+    address?: string | null;
+    scheduled_at?: string;
+    status?: string;
+  }>;
   onClockChange?: () => void;
 }
 
@@ -56,6 +62,10 @@ export function StaffAttendancePanel({ staffId, jobs, onClockChange }: StaffAtte
   }, [fetchAttendances]);
 
   const currentClockedIn = attendances.find((a) => a.status === 'clocked_in');
+  const jobsForClock = (jobs ?? []).filter((j) => {
+    const s = (j.status ?? '').toLowerCase();
+    return s !== 'completed' && s !== 'cancelled';
+  });
   const todayTotalHours = attendances
     .filter((a) => a.status === 'clocked_out' && a.total_hours != null)
     .reduce((sum, a) => sum + (a.total_hours ?? 0), 0);
@@ -173,7 +183,7 @@ export function StaffAttendancePanel({ staffId, jobs, onClockChange }: StaffAtte
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-slate-800">
+        <div className="mt-4 pt-4 border-t border-slate-800">
         {currentClockedIn ? (
           <button
             type="button"
@@ -191,24 +201,29 @@ export function StaffAttendancePanel({ staffId, jobs, onClockChange }: StaffAtte
         ) : (
           <>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Today&apos;s job — Clock in (GPS required)</p>
-            {jobs.length === 0 ? (
+              {jobsForClock.length === 0 ? (
               <p className="text-slate-500 text-xs">No jobs assigned today.</p>
             ) : (
               <div className="space-y-2">
-                {jobs.map((job) => (
+                  {jobsForClock.map((job) => (
                   <button
                     key={job.id}
                     type="button"
                     disabled={actionLoading !== null}
                     onClick={() => handleClockIn(job.id)}
-                    className="w-full py-3 bg-emerald-500 text-slate-950 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-400 disabled:opacity-50"
+                      className="w-full py-3 bg-emerald-500 text-slate-950 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 hover:bg-emerald-400 disabled:opacity-50"
                   >
                     {actionLoading === 'clock-in' ? (
                       <Loader2 className="animate-spin" size={18} />
                     ) : (
                       <LogIn size={18} />
                     )}
-                    Clock in — {job.client_name}
+                      <span>Clock in — {job.client_name}</span>
+                      {job.address && (
+                        <span className="text-[10px] font-extrabold text-slate-800 bg-emerald-400/60 px-2 py-0.5 rounded-full max-w-[95%] truncate">
+                          {job.address}
+                        </span>
+                      )}
                   </button>
                 ))}
               </div>
