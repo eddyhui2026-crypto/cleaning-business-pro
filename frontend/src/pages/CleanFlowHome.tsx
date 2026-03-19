@@ -136,11 +136,11 @@ export function CleanFlowHome() {
             </div>
             <h1 className="text-3xl font-black tracking-tight text-slate-50 sm:text-4xl lg:text-5xl">
               Run Your Cleaning Business
-              <span className="block text-emerald-300">Without the Chaos</span>
+              <span className="block text-emerald-300">Stress-Free, All-in-One</span>
             </h1>
             <p className="max-w-xl text-sm text-slate-200/80 sm:text-base">
-              Scheduling, staff timesheets, invoices, and client CRM — all in one simple platform designed
-              for growing cleaning teams.
+              Win back your time with one simple system for scheduling, staff tracking, invoicing, and CRM.
+              CleanFlow helps you stay fully booked, reduce no-shows, and get paid faster.
             </p>
 
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-amber-200">
@@ -153,14 +153,14 @@ export function CleanFlowHome() {
                 href={TRIAL_URL}
                 className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-6 py-3 text-xs font-black uppercase tracking-[0.25em] text-slate-950 shadow-xl shadow-emerald-500/40 hover:bg-emerald-300"
               >
-                Start Free Trial
+                Start Free Trial Now
                 <ArrowRight size={16} />
               </a>
               <a
                 href={COMPANY_LOGIN_URL}
                 className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-xs font-semibold text-slate-50 hover:border-emerald-300/60"
               >
-                Book Demo
+                See How It Works
               </a>
             </div>
 
@@ -352,11 +352,11 @@ export function CleanFlowHome() {
               Pricing
             </p>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-50 md:text-3xl">
-              Simple plans by team size
+                Simple pricing that grows with your team
             </h2>
             <p className="mt-2 text-sm text-slate-300/80">
-              Every plan includes all features: scheduling, CRM, staff app, GPS check‑ins, online booking,
-              invoices, PDF reports, and data retention.
+              Every plan includes everything you need to run daily operations smoothly and scale with confidence:
+              scheduling, CRM, staff app, GPS check-ins, invoices, and reporting.
             </p>
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-200">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
@@ -391,7 +391,7 @@ export function CleanFlowHome() {
               name="Small teams (1–10 staff)"
               price={homePrices.small[pricingInterval]}
               interval={pricingInterval}
-              description="For solo cleaners and small teams getting organised. All features included."
+              description="Perfect for solo cleaners and small teams ready to look more professional and save admin time."
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
                 'Staff app with clock in/out & timesheets',
@@ -410,7 +410,7 @@ export function CleanFlowHome() {
               name="Growing teams (11–20 staff)"
               price={homePrices.medium[pricingInterval]}
               interval={pricingInterval}
-              description="For growing companies running daily routes with multiple teams. All features included."
+              description="Best for growing companies managing busy schedules, multiple staff, and repeat customers."
               popular
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
@@ -430,7 +430,7 @@ export function CleanFlowHome() {
               name="Established teams (21–30 staff)"
               price={homePrices.large[pricingInterval]}
               interval={pricingInterval}
-              description="For established cleaning businesses that need full visibility. All features included."
+              description="For established teams that need stronger control, visibility, and reliable day-to-day execution."
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
                 'Staff app with clock in/out & timesheets',
@@ -507,11 +507,11 @@ export function CleanFlowHome() {
             <div className="grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:items-center">
               <div>
                 <h2 className="text-2xl font-black tracking-tight md:text-3xl">
-                  Start Running Your Cleaning Business Smarter
+                  Start Growing With Less Stress
                 </h2>
                 <p className="mt-2 text-sm font-medium text-emerald-950/80">
-                  Launch your CleanFlow trial in minutes. Connect your existing app and give your team a
-                  calmer workday.
+                  Start your trial in minutes and see how much smoother your operation feels when everything
+                  runs in one place.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-3 md:justify-end">
