@@ -11,6 +11,7 @@ import { isUkBankHoliday } from '../config/ukBankHolidays';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
 import { EditJobModal } from '../components/EditJobModal';
+import { useLocation } from 'react-router-dom';
 
 interface AdminSchedulePageProps {
   companyId: string | null;
@@ -40,6 +41,7 @@ const STANDARD_HOURS = { slotMinTime: '07:00:00', slotMaxTime: '19:00:00', scrol
 const OUT_OF_HOURS = { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollTime: '07:00:00' };
 
 export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
+  const location = useLocation();
   const [events, setEvents] = useState<JobEvent[]>([]);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,6 +141,44 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Deep-link support: /admin/schedule?jobId=... should open that job in EditJobModal.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const jobId = params.get('jobId');
+    const date = params.get('date');
+    const view = params.get('view');
+
+    if (!jobId || !companyId) return;
+    if (selectedJob?.id && String(selectedJob.id) === String(jobId)) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers = { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' };
+        const res = await fetch(apiUrl(`/api/jobs/${jobId}`), { headers });
+        if (!res.ok) return;
+        const job = await res.json();
+        if (cancelled) return;
+        setSelectedJob(job);
+
+        // Best-effort: move calendar to the requested day/view.
+        requestAnimationFrame(() => {
+          const api = calendarRef.current?.getApi?.();
+          if (!api) return;
+          if (view && typeof api.changeView === 'function') api.changeView(view);
+          if (date && typeof api.gotoDate === 'function') api.gotoDate(date);
+        });
+      } catch (e) {
+        console.error('Failed to deep-link job:', e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search, companyId, selectedJob]);
 
   const openEditModal = (job: any) => {
     setSelectedJob(job);

@@ -78,6 +78,7 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   const [todayCashTotal, setTodayCashTotal] = useState<number>(0);
   const [dashboardInvoices, setDashboardInvoices] = useState<any[]>([]);
   const [staffLocations, setStaffLocations] = useState<any[]>([]);
+  const [jobAssignmentEvents, setJobAssignmentEvents] = useState<any[]>([]);
   const [mapDrawerOpen, setMapDrawerOpen] = useState(false);
   const teamScrollRef = useRef<HTMLDivElement>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
@@ -162,13 +163,26 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
         const companiesRes = fetch(apiUrl('/api/companies'), { headers });
         const profilePromise = supabase.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle().then(({ data }) => data?.full_name ?? '');
 
-        const [jobsRes, staffRes, bookingsRes, paymentsRes, invoicesRes, staffLocRes, payrollMonthRes, payrollWeekRes, companiesResolved, profileName] = await Promise.all([
+        const [
+          jobsRes,
+          staffRes,
+          bookingsRes,
+          paymentsRes,
+          invoicesRes,
+          staffLocRes,
+          jobAssignmentEventsRes,
+          payrollMonthRes,
+          payrollWeekRes,
+          companiesResolved,
+          profileName,
+        ] = await Promise.all([
           fetch(apiUrl('/api/jobs?page=1&page_size=200'), { headers }),
           fetch(apiUrl('/api/staff'), { headers }),
           fetch(apiUrl('/api/admin/bookings'), { headers }),
           fetch(apiUrl('/api/admin/invoices/payments'), { headers }),
           fetch(apiUrl('/api/admin/invoices'), { headers }),
           fetch(apiUrl('/api/admin/staff-locations'), { headers }),
+          fetch(apiUrl('/api/staff/job-assignment-events?limit=10'), { headers }),
           fetch(apiUrl(`/api/admin/payroll-hours?date_from=${monthFrom}&date_to=${monthTo}`), { headers }),
           fetch(apiUrl(`/api/admin/payroll-hours?date_from=${weekFrom}&date_to=${weekTo}`), { headers }),
           companiesRes.then(r => r.json().catch(() => ({}))),
@@ -180,6 +194,7 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
         const paymentsData = await paymentsRes.json().catch(() => []);
         const invoicesData = await invoicesRes.json().catch(() => []);
         const staffLocData = await staffLocRes.json().catch(() => []);
+        const jobAssignmentEventsData = await jobAssignmentEventsRes.json().catch(() => []);
         const payrollMonthData = await payrollMonthRes.json().catch(() => []);
         const payrollWeekData = await payrollWeekRes.json().catch(() => []);
         const sumPay = (arr: any[]) => (Array.isArray(arr) ? arr.reduce((s, r) => s + (Number(r.total_pay) || 0), 0) : 0);
@@ -198,14 +213,15 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
           default_payment_terms_days: (c as any).default_payment_terms_days ?? null,
         } : null);
         setUserDisplayName(typeof profileName === 'string' ? profileName : '');
-        return { jobsData, staffData, bookingsData, paymentsData, invoicesData, staffLocData };
+        return { jobsData, staffData, bookingsData, paymentsData, invoicesData, staffLocData, jobAssignmentEventsData };
       };
 
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Request timeout')), FETCH_TIMEOUT_MS),
       );
-      const { jobsData, staffData, bookingsData, paymentsData, invoicesData, staffLocData } = await Promise.race([doFetch(), timeoutPromise]);
+      const { jobsData, staffData, bookingsData, paymentsData, invoicesData, staffLocData, jobAssignmentEventsData } = await Promise.race([doFetch(), timeoutPromise]);
       setBookingsCount(Array.isArray(bookingsData) ? bookingsData.filter((b: any) => b.status === 'pending').length : 0);
+      setJobAssignmentEvents(Array.isArray(jobAssignmentEventsData) ? jobAssignmentEventsData : []);
 
       if (Array.isArray(staffData)) {
         setStaffList(staffData);
@@ -272,6 +288,15 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
 
   useEffect(() => {
     fetchData();
+  }, [fetchData]);
+
+  // Keep the dashboard alerts fresh when the user returns to the tab.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchData();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [fetchData]);
 
   // Fetch daily remarks for visible calendar month (Overview)
@@ -782,6 +807,50 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
                           </button>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {jobAssignmentEvents.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">
+                        Job responses — tap to reassign
+                      </p>
+                      {jobAssignmentEvents.map((a: any) => {
+                        const response = a.response_status as string;
+                        const jobDateStr = a.job_scheduled_at ? String(a.job_scheduled_at).slice(0, 10) : '';
+                        const bg =
+                          response === 'declined' ? 'bg-amber-500/20 border-amber-400/70' : 'bg-amber-500/10 border-amber-400/40';
+                        return (
+                          <div
+                            key={a.id}
+                            className={`flex items-start gap-3 px-4 py-3 rounded-2xl border ${bg} text-amber-100 text-sm`}
+                          >
+                            <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">
+                                {response === 'declined' ? '[Declined]' : '[Accepted]'} {a.staff_full_name || 'Staff'} —{' '}
+                                {a.job_client_name || 'Job'}
+                              </div>
+                              <div className="text-xs text-amber-100/80 mt-1">
+                                {a.job_address ? String(a.job_address) : 'No address'} {a.job_scheduled_at ? `· ${jobDateStr}` : ''}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(
+                                  `/admin/schedule?jobId=${encodeURIComponent(a.job_id)}&view=timeGridDay&date=${encodeURIComponent(
+                                    jobDateStr,
+                                  )}`,
+                                )
+                              }
+                              className="shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400"
+                            >
+                              Review
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 

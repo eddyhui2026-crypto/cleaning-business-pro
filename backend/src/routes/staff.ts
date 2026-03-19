@@ -5,7 +5,7 @@ import { checkStaffLimit } from '../middleware/planLimits';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { distanceMeters, CLOCK_IN_RADIUS_METERS } from '../lib/distance';
 import { roundHoursForPayroll } from '../lib/payrollRound';
-import { saveSubscription } from '../services/pushNotificationService';
+import { notifyCompany, saveSubscription } from '../services/pushNotificationService';
 
 const router = Router();
 
@@ -290,13 +290,21 @@ router.post('/clock-in', requireStaffOrSupervisor, async (req: AuthRequest, res:
 
     const { data: assignment } = await supabase
       .from('job_assignments')
-      .select('id')
+      .select('id, status')
       .eq('job_id', job_id)
       .eq('staff_id', staffId)
       .maybeSingle();
 
     if (!assignment) {
       res.status(403).json({ success: false, message: 'You are not assigned to this job' });
+      return;
+    }
+
+    // Only accepted assignments are allowed to clock in.
+    if (assignment.status !== 'accepted') {
+      res
+        .status(403)
+        .json({ success: false, message: 'You must accept this job before you can clock in.' });
       return;
     }
 
@@ -437,6 +445,7 @@ router.get('/my-jobs', async (req: AuthRequest, res: Response): Promise<void> =>
 /** POST /api/staff/job-response — Staff accept or decline an assignment. */
 router.post('/job-response', async (req: AuthRequest, res: Response): Promise<void> => {
   const staffId = req.user!.id;
+  const companyId = req.companyId;
   const { assignment_id, response } = req.body;
 
   if (!assignment_id || !response) {
@@ -452,13 +461,18 @@ router.post('/job-response', async (req: AuthRequest, res: Response): Promise<vo
   try {
     const { data: row, error: fetchErr } = await supabase
       .from('job_assignments')
-      .select('id, staff_id')
+      .select('id, staff_id, job_id')
       .eq('id', assignment_id)
       .eq('staff_id', staffId)
       .single();
 
     if (fetchErr || !row) {
       res.status(404).json({ error: 'Assignment not found' });
+      return;
+    }
+
+    if (!companyId) {
+      res.status(403).json({ error: 'No company' });
       return;
     }
 
@@ -470,9 +484,102 @@ router.post('/job-response', async (req: AuthRequest, res: Response): Promise<vo
 
     if (updateErr) throw updateErr;
 
+    // 1) Persist an event for Dashboard prompts.
+    await supabase.from('job_assignment_events').insert({
+      company_id: companyId,
+      job_id: row.job_id,
+      staff_id: staffId,
+      response_status: status,
+    });
+
+    // 2) Push notification to admins with deep-link to the job.
+    const [jobRes, staffRes] = await Promise.all([
+      supabase
+        .from('jobs')
+        .select('id, client_name, address, scheduled_at')
+        .eq('id', row.job_id)
+        .maybeSingle(),
+      supabase.from('profiles').select('full_name').eq('id', staffId).maybeSingle(),
+    ]);
+
+    const job = jobRes.data;
+    const staffProfile = staffRes.data;
+    const staffFullName = (staffProfile as any)?.full_name || 'Staff';
+    const clientName = (job as any)?.client_name || 'Job';
+    const jobAddress = (job as any)?.address ? String((job as any).address) : '';
+    const jobDateStr = (job as any)?.scheduled_at ? String((job as any).scheduled_at).slice(0, 10) : '';
+
+    const title = status === 'declined' ? 'Job declined' : 'Job accepted';
+    const body = `${staffFullName} ${status === 'declined' ? 'declined' : 'accepted'}: ${clientName}${jobAddress ? ` — ${jobAddress}` : ''}`;
+    const url = `/admin/schedule?jobId=${row.job_id}&view=timeGridDay&date=${encodeURIComponent(jobDateStr)}`;
+
+    await notifyCompany(companyId, {
+      title,
+      body,
+      url,
+      tag: `job-response:${row.job_id}:${status}`,
+    }).catch(() => {});
+
     res.json({ success: true, message: `Job ${status}` });
   } catch (err: any) {
     console.error('job-response error:', err);
+    res.status(500).json({ error: err?.message ?? 'Internal server error' });
+  }
+});
+
+// GET /api/staff/job-assignment-events — Admin reads recent accept/decline events
+router.get('/job-assignment-events', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
+  const companyId = req.companyId;
+  if (!companyId) {
+    res.status(403).json({ error: 'No company' });
+    return;
+  }
+
+  const limitRaw = Number(req.query.limit);
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(50, limitRaw)) : 10;
+
+  try {
+    const { data: events, error } = await supabase
+      .from('job_assignment_events')
+      .select('id, created_at, response_status, job_id, staff_id')
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    const jobIds = [...new Set((events ?? []).map((e: any) => String(e.job_id)))];
+    const staffIds = [...new Set((events ?? []).map((e: any) => String(e.staff_id)))];
+
+    const [{ data: jobs }, { data: staff }] = await Promise.all([
+      jobIds.length
+        ? supabase.from('jobs').select('id, client_name, address, scheduled_at').in('id', jobIds)
+        : Promise.resolve({ data: [] }),
+      staffIds.length
+        ? supabase.from('profiles').select('id, full_name').in('id', staffIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const jobMap = new Map((jobs ?? []).map((j: any) => [String(j.id), j]));
+    const staffMap = new Map((staff ?? []).map((s: any) => [String(s.id), s]));
+
+    const mapped = (events ?? []).map((e: any) => {
+      const job = jobMap.get(String(e.job_id));
+      const staffMember = staffMap.get(String(e.staff_id));
+      return {
+        id: e.id,
+        created_at: e.created_at,
+        response_status: e.response_status,
+        job_id: e.job_id,
+        job_client_name: job?.client_name ?? null,
+        job_address: job?.address ?? null,
+        job_scheduled_at: job?.scheduled_at ?? null,
+        staff_full_name: staffMember?.full_name ?? null,
+      };
+    });
+
+    res.json(mapped);
+  } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Internal server error' });
   }
 });
