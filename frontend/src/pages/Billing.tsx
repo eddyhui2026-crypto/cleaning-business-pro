@@ -51,7 +51,7 @@ export const Billing = ({ companyId, email }: BillingProps) => {
 
         <div className="p-8">
           <div className="flex justify-center items-baseline gap-1 mb-2">
-            <span className="text-4xl font-black text-slate-900">From £9.90</span>
+            <span className="text-4xl font-black text-slate-900">From £19</span>
             <span className="text-slate-500 font-medium">/ month</span>
           </div>
           <p className="text-xs text-slate-500 text-center mb-4">
@@ -75,7 +75,7 @@ export const Billing = ({ companyId, email }: BillingProps) => {
           <p className="mb-6 text-[11px] text-center text-slate-500">
             Launch offer:{' '}
             <span className="font-semibold text-emerald-600">
-              use code EARLYBIRD50 at checkout in the first 3 months to get 50% off forever.
+              14-day free trial + first 3 months 30% off.
             </span>
           </p>
 

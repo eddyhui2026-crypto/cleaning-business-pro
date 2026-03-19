@@ -139,7 +139,7 @@ export function CleanFlowHome() {
 
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-amber-200">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
-              <span>Launch offer · 50% off forever</span>
+              <span>Launch offer · 14-day free trial + first 3 months 30% off</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -354,14 +354,14 @@ export function CleanFlowHome() {
             </p>
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-200">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
-              <span>Launch offer · 50% off forever with EARLYBIRD50</span>
+              <span>Launch offer · 14-day free trial + first 3 months 30% off</span>
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
             <PricingCard
               name="Small teams (1–10 staff)"
-              price="£9.90"
+              price="£19"
               description="For solo cleaners and small teams getting organised. All features included."
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
@@ -379,7 +379,7 @@ export function CleanFlowHome() {
             />
             <PricingCard
               name="Growing teams (11–20 staff)"
-              price="£19.90"
+              price="£39"
               description="For growing companies running daily routes with multiple teams. All features included."
               popular
               highlights={[
@@ -398,7 +398,7 @@ export function CleanFlowHome() {
             />
             <PricingCard
               name="Established teams (21–30 staff)"
-              price="£29.90"
+              price="£59"
               description="For established cleaning businesses that need full visibility. All features included."
               highlights={[
                 'Drag‑and‑drop job scheduling calendar',
@@ -417,8 +417,8 @@ export function CleanFlowHome() {
           </div>
 
           <p className="mt-4 text-center text-[11px] text-slate-400">
-            Use code <span className="font-semibold text-emerald-300">EARLYBIRD50</span> at checkout in the
-            first 3 months after launch to get <span className="font-semibold">50% off forever</span>.
+            Every new subscription includes <span className="font-semibold">14-day free trial</span> and
+            <span className="font-semibold"> 30% off for the first 3 months</span>.
           </p>
         </section>
 

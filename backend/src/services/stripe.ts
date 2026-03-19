@@ -18,6 +18,9 @@ const PLAN_PRICE_ENV: Record<PlanKey, string | undefined> = {
   large: process.env.STRIPE_PRICE_LARGE,
 };
 
+const CHECKOUT_TRIAL_DAYS = 14;
+const AUTO_PROMO_30_OFF_3MO = process.env.STRIPE_PROMO_30_OFF_3MO;
+
 function getPriceIdForPlan(plan: string | null | undefined): string {
   const key = (plan ?? 'small') as PlanKey;
   const priceId = PLAN_PRICE_ENV[key];
@@ -30,6 +33,10 @@ function getPriceIdForPlan(plan: string | null | undefined): string {
 export const createCheckoutSession = async (companyId: string, email: string, plan: string | null | undefined) => {
   try {
     const priceId = getPriceIdForPlan(plan);
+    const discounts =
+      AUTO_PROMO_30_OFF_3MO && AUTO_PROMO_30_OFF_3MO.trim()
+        ? [{ promotion_code: AUTO_PROMO_30_OFF_3MO.trim() }]
+        : undefined;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -46,7 +53,10 @@ export const createCheckoutSession = async (companyId: string, email: string, pl
       metadata: {
         companyId: companyId,
       },
-      allow_promotion_codes: true,
+      subscription_data: {
+        trial_period_days: CHECKOUT_TRIAL_DAYS,
+      },
+      discounts,
     });
 
     return session;

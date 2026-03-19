@@ -23,7 +23,7 @@ export const SubscriptionGuard = ({ children, companyId }: { children: React.Rea
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="text-xl font-bold">Subscription Required</h2>
-        <p className="text-slate-500 mb-4">Upgrade to Pro for £9.9/mo to manage your business.</p>
+        <p className="text-slate-500 mb-4">Upgrade to continue. Plans start from £19/month.</p>
         <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">
           Upgrade Now
         </button>
