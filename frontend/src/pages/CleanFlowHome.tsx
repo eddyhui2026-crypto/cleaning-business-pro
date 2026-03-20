@@ -157,7 +157,7 @@ export function CleanFlowHome() {
                 <ArrowRight size={16} />
               </a>
               <a
-                href={COMPANY_LOGIN_URL}
+                href="#how-it-works"
                 className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-xs font-semibold text-slate-50 hover:border-emerald-300/60"
               >
                 See How It Works
@@ -310,7 +310,7 @@ export function CleanFlowHome() {
         </section>
 
         {/* WORKFLOW */}
-        <section id="how-it-works" className="space-y-8 py-12 md:py-16">
+        <section id="how-it-works" className="scroll-mt-24 space-y-8 py-12 md:py-16">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-300">

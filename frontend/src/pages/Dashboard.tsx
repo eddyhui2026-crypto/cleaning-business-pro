@@ -666,18 +666,19 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
     <div className="min-h-screen bg-slate-950 text-slate-50 pb-20 lg:pb-20">
       <main className="flex flex-col min-w-0 text-left">
         <header className="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-3 sm:px-8 py-3 sm:py-4 sticky top-0 z-40">
-          <div className="flex items-center justify-between gap-2 min-h-[44px]">
-            <div className="flex items-center gap-2 text-emerald-300 shrink-0">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2 min-h-[44px]">
+            <div className="flex items-center gap-2 text-emerald-300 shrink-0 min-w-0">
               <div className="bg-emerald-500 p-1.5 sm:p-2 rounded-xl text-slate-950 shadow-lg shadow-emerald-500/40">
                 <LayoutDashboard size={20} className="sm:w-[22px] sm:h-[22px]" />
               </div>
               <span className="font-black text-lg sm:text-xl text-slate-50 tracking-tighter uppercase italic hidden sm:inline">CleanPro</span>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2 shrink min-w-0 w-full sm:w-auto">
               <Link
                 to="/admin/help"
-                className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 font-bold flex items-center gap-1.5 text-xs uppercase tracking-wider min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center"
+                className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 font-bold flex items-center gap-1.5 text-xs uppercase tracking-wider min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center shrink-0"
                 title="Help & FAQ"
+                aria-label="Help and FAQ"
               >
                 <CircleHelp size={18} className="sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Help</span>

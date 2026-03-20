@@ -8,10 +8,11 @@ const mainNavItems = [
   { to: '/admin/invoices', icon: Receipt, label: 'Invoices' },
   { to: '/admin/attendance', icon: Wallet, label: 'Payroll' },
   { to: '/admin/quotes', icon: FileText, label: 'Quotes' },
+  /** Own tab so Help is visible without opening More (especially on mobile). */
+  { to: '/admin/help', icon: CircleHelp, label: 'Help' },
 ];
 
 const moreNavItems: { to: string; icon: typeof UserCircle; label: string; comingSoon?: boolean }[] = [
-  { to: '/admin/help', icon: CircleHelp, label: 'Help' },
   { to: '/admin/reports', icon: BarChart2, label: 'Reports' },
   { to: '/admin/customers', icon: UserCircle, label: 'Customers' },
   { to: '/admin/recurring-jobs', icon: Repeat, label: 'Job detail' },
@@ -40,7 +41,7 @@ export function AdminBottomNav() {
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950 border-t border-slate-800 flex items-center justify-around py-2 safe-area-pb gap-0 min-h-[56px]"
+        className="AdminBottomNav fixed bottom-0 left-0 right-0 z-50 bg-slate-950 border-t border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-around py-2 safe-area-pb gap-x-0 gap-y-1 min-h-[56px]"
         aria-label="Main navigation"
       >
         {mainNavItems.map(({ to, icon: Icon, label }) => (
@@ -74,7 +75,7 @@ export function AdminBottomNav() {
           </button>
 
           {moreOpen && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 py-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-xl z-50">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 py-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-xl z-[60]">
               {moreNavItems.map(({ to, icon: Icon, label, comingSoon }) => (
                 comingSoon ? (
                   <div
