@@ -8,8 +8,6 @@ const mainNavItems = [
   { to: '/admin/invoices', icon: Receipt, label: 'Invoices' },
   { to: '/admin/attendance', icon: Wallet, label: 'Payroll' },
   { to: '/admin/quotes', icon: FileText, label: 'Quotes' },
-  /** Own tab so Help is visible without opening More (especially on mobile). */
-  { to: '/admin/help', icon: HelpCircle, label: 'Help' },
 ];
 
 const moreNavItems: { to: string; icon: typeof UserCircle; label: string; comingSoon?: boolean }[] = [
@@ -18,6 +16,7 @@ const moreNavItems: { to: string; icon: typeof UserCircle; label: string; coming
   { to: '/admin/recurring-jobs', icon: Repeat, label: 'Job detail' },
   { to: '/admin/settings', icon: SettingsIcon, label: 'Settings' },
   { to: '/admin/bookings', icon: BookOpen, label: 'Bookings' },
+  { to: '/admin/help', icon: HelpCircle, label: 'Help & FAQ' },
 ];
 
 export function AdminBottomNav() {
