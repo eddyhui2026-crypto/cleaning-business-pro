@@ -14,6 +14,8 @@ import {
   FileText,
 } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 
 /** Job detail: list ALL jobs (one-off + recurring). Edit goes to Edit Detail page. */
 interface AdminRecurringJobsPageProps {
@@ -188,12 +190,15 @@ export function AdminRecurringJobsPage({ companyId }: AdminRecurringJobsPageProp
             <p className="text-slate-400 text-sm mt-1">All jobs — use search above; click the pencil to open Edit Detail.</p>
           </div>
         </div>
-        <button
-          onClick={() => navigate('/admin/jobs/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-400 text-slate-950 rounded-xl font-semibold hover:bg-emerald-300"
-        >
-          <Plus size={20} /> Add New Job
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <HelpLink anchor={HelpAnchor.RecurringJobs} />
+          <button
+            onClick={() => navigate('/admin/jobs/new')}
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-400 text-slate-950 rounded-xl font-semibold hover:bg-emerald-300"
+          >
+            <Plus size={20} /> Add New Job
+          </button>
+        </div>
       </div>
 
       <div className="p-4 max-w-6xl mx-auto space-y-4">

@@ -10,6 +10,8 @@ import { Loader2 } from 'lucide-react';
 import { isUkBankHoliday } from '../config/ukBankHolidays';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 import { EditJobModal } from '../components/EditJobModal';
 import { useLocation } from 'react-router-dom';
 
@@ -293,6 +295,7 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
         backTo="/dashboard"
         backLabel="Back to Dashboard"
         variant="dark"
+        action={<HelpLink anchor={HelpAnchor.Schedule} />}
       />
 
       <div className="p-6">

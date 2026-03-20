@@ -5,6 +5,8 @@ import { Loader2, X, Plus, Download } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 
 const SUGGESTED_EXTRAS = [
   { name: 'Inside Fridge', base_price: 15, price_type: 'fixed' as const },
@@ -239,6 +241,7 @@ export function AdminServicesPage({ companyId }: AdminServicesPageProps) {
         backTo="/dashboard"
         backLabel="Dashboard"
         variant="dark"
+        action={<HelpLink anchor={HelpAnchor.Services} />}
       />
       <div className="p-4 md:p-8 max-w-4xl mx-auto flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">

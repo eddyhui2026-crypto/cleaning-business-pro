@@ -94,7 +94,7 @@ export const StaffLogin = () => {
               />
             </div>
             <p className="mt-1.5 text-xs text-slate-400">
-              Default password is <strong className="text-emerald-300">12345678</strong>
+              Use the <strong className="text-emerald-300">temporary password</strong> your admin shared when your account was created. You can change it after you sign in.
             </p>
           </div>
 

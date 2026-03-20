@@ -5,6 +5,8 @@ import { apiUrl } from '../lib/api';
 import { Plus, Loader2, Download, Send, Receipt, X, Search } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 import { useToast } from '../context/ToastContext';
 
 interface AdminInvoicesPageProps {
@@ -370,7 +372,8 @@ export function AdminInvoicesPage({ companyId }: AdminInvoicesPageProps) {
         backLabel="Back to Dashboard"
         variant="dark"
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <HelpLink anchor={HelpAnchor.Invoices} className="px-1" />
             <button
               onClick={() => setSettingsOpen(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 shadow-[0_10px_25px_rgba(16,185,129,0.45)]"

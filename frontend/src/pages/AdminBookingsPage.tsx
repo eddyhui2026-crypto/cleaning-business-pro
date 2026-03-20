@@ -6,6 +6,8 @@ import { formatDateUK } from '../lib/dateFormat';
 import { Loader2, Calendar, User, MapPin, CheckCircle } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 
 interface AdminBookingsPageProps {
   companyId: string | null;
@@ -120,6 +122,7 @@ export function AdminBookingsPage({ companyId }: AdminBookingsPageProps) {
         backTo="/dashboard"
         backLabel="Back to Dashboard"
         variant="dark"
+        action={<HelpLink anchor={HelpAnchor.Bookings} />}
       />
       <div className="p-4 md:p-8 max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
         <div className="bg-slate-900/80 rounded-2xl border border-slate-700 p-12 text-center max-w-md">

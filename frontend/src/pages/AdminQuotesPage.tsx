@@ -5,6 +5,8 @@ import { apiUrl } from '../lib/api';
 import { Plus, Loader2, FileText, Briefcase, Search } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 import { useToast } from '../context/ToastContext';
 
 interface AdminQuotesPageProps {
@@ -145,12 +147,15 @@ export function AdminQuotesPage({ companyId }: AdminQuotesPageProps) {
         backLabel="Back to Dashboard"
         variant="dark"
         action={
-          <button
-            onClick={() => navigate('/admin/quotes/new')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            <Plus size={20} /> New quote
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <HelpLink anchor={HelpAnchor.Quotes} />
+            <button
+              onClick={() => navigate('/admin/quotes/new')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              <Plus size={20} /> New quote
+            </button>
+          </div>
         }
       />
 

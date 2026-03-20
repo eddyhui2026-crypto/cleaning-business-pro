@@ -19,6 +19,8 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 
 interface AdminStaffManagementProps {
   companyId: string | null;
@@ -345,10 +347,11 @@ export const AdminStaffManagement = ({ companyId }: AdminStaffManagementProps) =
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                  Staff log in with their phone number and default password (12345678). They can change the password after first login.
+                  After you add them, a random temporary password appears below — share phone + password with the staff member. They sign in at Staff Login and should change their password after first login.
                 </p>
+                <HelpLink anchor={HelpAnchor.Staff} label="More about staff & login" className="!normal-case" />
               </div>
 
               <button

@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Users, CalendarRange, CreditCard, Smartphone, FileText } from 'lucide-react';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 
 export function AdminGettingStarted() {
   const navigate = useNavigate();
@@ -18,12 +20,15 @@ export function AdminGettingStarted() {
               schedule, staff app, and invoices.
             </p>
           </div>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:border-emerald-400/70 hover:text-emerald-200"
-          >
-            Back to dashboard
-          </button>
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <HelpLink anchor={HelpAnchor.GettingStarted} label="Full FAQ" className="!text-[11px]" />
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-200 hover:border-emerald-400/70 hover:text-emerald-200"
+            >
+              Back to dashboard
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">

@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
 import { useToast } from '../context/ToastContext';
 import { AdminBottomNav } from '../components/AdminBottomNav';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 import { ChevronLeft, ChevronDown, Loader2, DollarSign, Clock, X, Settings, Wallet, FileText, Download } from 'lucide-react';
 
 /** Derive initial inputs from staff. 載入時將三個數值都拎晒出嚟，唔再根據 pay_type 隱藏。 */
@@ -584,15 +586,18 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
           </button>
           <h1 className="font-black text-2xl text-slate-50">Attendance & Payroll</h1>
         </div>
-        <button
-          type="button"
-          onClick={openPayrollSettings}
-          className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-300 border border-slate-700 flex items-center gap-2"
-          title="Payroll settings"
-        >
-          <Settings size={20} />
-          <span className="text-sm font-medium hidden sm:inline">Settings</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <HelpLink anchor={HelpAnchor.Payroll} className="px-2 py-2 border border-slate-700 rounded-xl bg-slate-900/50" />
+          <button
+            type="button"
+            onClick={openPayrollSettings}
+            className="p-2.5 hover:bg-slate-800 rounded-xl text-slate-300 border border-slate-700 flex items-center gap-2"
+            title="Payroll settings"
+          >
+            <Settings size={20} />
+            <span className="text-sm font-medium hidden sm:inline">Settings</span>
+          </button>
+        </div>
       </div>
 
       <div className="p-6 max-w-6xl mx-auto space-y-6">

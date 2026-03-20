@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, BarChart2, Download, TrendingUp, TrendingDown, Calendar, DollarSign, Briefcase, Users, Clock, Loader2 } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
 
@@ -197,7 +199,9 @@ export function AdminReportsPage({ companyId }: AdminReportsPageProps) {
             <BarChart2 size={28} className="text-emerald-400" />
             Reports
           </h1>
-          <div className="w-10" />
+          <div className="shrink-0">
+            <HelpLink anchor={HelpAnchor.Reports} />
+          </div>
         </div>
 
         <p className="text-slate-400 text-sm mb-6">Business report by period. All figures from your jobs and payroll.</p>

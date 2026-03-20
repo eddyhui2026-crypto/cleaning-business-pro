@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
 import { useToast } from '../context/ToastContext';
 import { AdminBottomNav } from '../components/AdminBottomNav';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 import { DATA_RETENTION_MESSAGE } from '../lib/dataRetention';
 
 // 1. 定義 Props 介面，解決 Dashboard 傳入 companyId 的錯誤
@@ -255,21 +257,24 @@ export const Settings = ({ companyId }: SettingsProps) => {
     <div className="min-h-screen bg-slate-950 text-slate-50 pb-20">
       <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-500 px-4 pt-4">
       {/* 頂部：返回鍵 + 標題 */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-          aria-label="Back"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-50 tracking-tight uppercase">Company Settings</h1>
-          <p className="text-slate-400 font-bold text-sm mt-0.5 uppercase tracking-widest">
-            Brand your business & reports
-          </p>
+      <div className="flex items-center justify-between gap-3 w-full">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="p-2 -ml-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors shrink-0"
+            aria-label="Back"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-50 tracking-tight uppercase">Company Settings</h1>
+            <p className="text-slate-400 font-bold text-sm mt-0.5 uppercase tracking-widest">
+              Brand your business & reports
+            </p>
+          </div>
         </div>
+        <HelpLink anchor={HelpAnchor.Settings} className="shrink-0" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

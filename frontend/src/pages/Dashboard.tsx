@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -27,6 +27,7 @@ import {
   CheckCircle,
   Bell,
   BarChart2,
+  CircleHelp,
 } from 'lucide-react';
 
 // --- Components & Utils ---
@@ -673,6 +674,14 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
               <span className="font-black text-lg sm:text-xl text-slate-50 tracking-tighter uppercase italic hidden sm:inline">CleanPro</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
+              <Link
+                to="/admin/help"
+                className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 font-bold flex items-center gap-1.5 text-xs uppercase tracking-wider min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center"
+                title="Help & FAQ"
+              >
+                <CircleHelp size={18} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Help</span>
+              </Link>
               <button
                 onClick={() => setReportOpen(true)}
                 className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl bg-amber-500 text-white font-bold flex items-center gap-1.5 sm:gap-2 text-xs uppercase tracking-wider hover:bg-amber-600 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center"

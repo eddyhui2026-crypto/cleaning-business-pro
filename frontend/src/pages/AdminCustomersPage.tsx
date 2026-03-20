@@ -5,6 +5,8 @@ import { apiUrl } from '../lib/api';
 import { CreditCard, Loader2, X, Plus, User } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
+import { HelpLink } from '../components/HelpLink';
+import { HelpAnchor } from '../config/helpAnchors';
 
 interface AdminCustomersPageProps {
   companyId: string | null;
@@ -143,9 +145,12 @@ export function AdminCustomersPage({ companyId }: AdminCustomersPageProps) {
         backTo="/dashboard"
         backLabel="Back to Dashboard"
         action={
-          <button onClick={() => { setAddOpen(true); setCreatedPassword(null); setAddError(null); setAddForm({ full_name: '', phone: '', email: '', address: '', notes: '' }); }} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-            <Plus size={18} /> Add customer
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <HelpLink anchor={HelpAnchor.Customers} />
+            <button onClick={() => { setAddOpen(true); setCreatedPassword(null); setAddError(null); setAddForm({ full_name: '', phone: '', email: '', address: '', notes: '' }); }} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              <Plus size={18} /> Add customer
+            </button>
+          </div>
         }
         variant="dark"
       />

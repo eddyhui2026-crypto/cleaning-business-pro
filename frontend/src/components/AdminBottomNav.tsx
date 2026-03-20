@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Receipt, Wallet, Settings as SettingsIcon, MoreHorizontal, UserCircle, FileText, BookOpen, Repeat, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, Calendar, Receipt, Wallet, Settings as SettingsIcon, MoreHorizontal, UserCircle, FileText, BookOpen, Repeat, BarChart2, CircleHelp } from 'lucide-react';
 
 const mainNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -11,6 +11,7 @@ const mainNavItems = [
 ];
 
 const moreNavItems: { to: string; icon: typeof UserCircle; label: string; comingSoon?: boolean }[] = [
+  { to: '/admin/help', icon: CircleHelp, label: 'Help' },
   { to: '/admin/reports', icon: BarChart2, label: 'Reports' },
   { to: '/admin/customers', icon: UserCircle, label: 'Customers' },
   { to: '/admin/recurring-jobs', icon: Repeat, label: 'Job detail' },
