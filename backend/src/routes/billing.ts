@@ -25,7 +25,15 @@ router.post('/create-checkout-session', async (req: AuthRequest, res: Response):
   const interval = req.body.interval === 'yearly' ? 'yearly' : 'monthly';
 
   try {
-    const session = await createCheckoutSession(companyId, email, plan, interval);
+    const { data: company } = await supabase
+      .from('companies')
+      .select('trial_ends_at')
+      .eq('id', companyId)
+      .single();
+
+    const session = await createCheckoutSession(companyId, email, plan, interval, {
+      appTrialEndsAtIso: company?.trial_ends_at ?? null,
+    });
     res.json({ url: session.url });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
