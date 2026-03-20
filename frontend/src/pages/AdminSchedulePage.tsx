@@ -6,14 +6,14 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { isUkBankHoliday } from '../config/ukBankHolidays';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { PageHeader } from '../components/PageHeader';
 import { HelpLink } from '../components/HelpLink';
 import { HelpAnchor } from '../config/helpAnchors';
 import { EditJobModal } from '../components/EditJobModal';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface AdminSchedulePageProps {
   companyId: string | null;
@@ -44,6 +44,7 @@ const OUT_OF_HOURS = { slotMinTime: '00:00:00', slotMaxTime: '24:00:00', scrollT
 
 export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<JobEvent[]>([]);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +188,7 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
   };
 
   const handleAddNewJob = () => {
-    window.location.href = '/admin/jobs/new?fromSchedule=1&returnTo=schedule';
+    navigate('/admin/jobs/new?fromSchedule=1&returnTo=schedule');
   };
 
   const onToggleOutOfHours = () => {
@@ -295,7 +296,19 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
         backTo="/dashboard"
         backLabel="Back to Dashboard"
         variant="dark"
-        action={<HelpLink anchor={HelpAnchor.Schedule} />}
+        action={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <HelpLink anchor={HelpAnchor.Schedule} />
+            <button
+              type="button"
+              onClick={handleAddNewJob}
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-slate-950 rounded-xl font-semibold hover:bg-emerald-400 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-950 shadow-[0_10px_25px_rgba(16,185,129,0.45)]"
+            >
+              <Plus size={18} strokeWidth={2.5} />
+              New job
+            </button>
+          </div>
+        }
       />
 
       <div className="p-6">
@@ -330,15 +343,7 @@ export function AdminSchedulePage({ companyId }: AdminSchedulePageProps) {
                   {showOutOfHours ? '24h view · Scroll for night shifts' : 'Standard hours 07:00–19:00'}
                 </p>
               </div>
-              {/* Search / filter + Add job */}
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleAddNewJob}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-500 text-slate-950 text-[11px] font-semibold hover:bg-emerald-400 shadow-sm"
-                >
-                  + Add new job
-                </button>
                 <input
                   type="text"
                   value={searchTerm}
