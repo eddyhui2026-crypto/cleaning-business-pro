@@ -864,16 +864,7 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                 <p className="text-xs text-slate-500">Clock in/out hours are rounded to this interval for payroll.</p>
               </div>
               <div className="border-t border-slate-700 pt-4 space-y-2">
-                <label className="block text-sm font-medium text-slate-300">Company default pay type</label>
-                <select
-                  value={defaultPayTypeDraft}
-                  onChange={(e) => setDefaultPayTypeDraft(e.target.value as 'hourly' | 'percentage' | 'fixed')}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none"
-                >
-                  <option value="hourly">Hourly (hours × rate)</option>
-                  <option value="percentage">Percentage of job price</option>
-                  <option value="fixed">Fixed amount per job</option>
-                </select>
+                <p className="text-sm font-medium text-slate-300">Company default pay rates</p>
                 <div className="mt-3 space-y-2">
                   <div>
                     <label className="block text-xs text-slate-400">Default hourly rate (£)</label>
@@ -913,8 +904,7 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1">
-                    All three rates are saved. We use the one that matches the selected&nbsp;
-                    <span className="font-semibold">Company default pay type</span> when an employee has no personal pay set.
+                    All three rates are saved. Employees with personal pay settings use their own values first.
                   </p>
                 </div>
               </div>
