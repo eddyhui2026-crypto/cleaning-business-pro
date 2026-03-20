@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Play, Square, Loader2, Camera, ChevronLeft } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { MapPin, Play, Square, Loader2, Camera, ChevronLeft, HelpCircle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
 
@@ -100,11 +100,19 @@ export const StaffJobView = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Top Bar */}
-      <div className="bg-white p-4 flex items-center gap-4 border-b sticky top-0 z-10">
-        <button onClick={() => navigate('/staff')} className="p-2 hover:bg-slate-100 rounded-full">
+      <div className="bg-white p-4 flex items-center gap-2 border-b sticky top-0 z-10">
+        <button onClick={() => navigate('/staff')} className="p-2 hover:bg-slate-100 rounded-full shrink-0">
           <ChevronLeft size={24} />
         </button>
-        <h1 className="font-bold text-lg text-slate-800">Mission Details</h1>
+        <h1 className="font-bold text-lg text-slate-800 flex-1 min-w-0 truncate">Mission Details</h1>
+        <Link
+          to="/staff/help"
+          className="shrink-0 p-2 rounded-full text-emerald-600 hover:bg-emerald-50 border border-emerald-200"
+          title="Help"
+          aria-label="Staff help"
+        >
+          <HelpCircle size={22} />
+        </Link>
       </div>
 
       <div className="p-5 max-w-md mx-auto space-y-6">

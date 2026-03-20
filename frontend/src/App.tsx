@@ -18,6 +18,7 @@ import { StaffDashboard } from './pages/StaffDashboard';
 import { StaffJobView } from './pages/StaffJobView';
 import { StaffTimesheet } from './pages/StaffTimesheet';
 import { StaffJobsList } from './pages/StaffJobsList';
+import { StaffHelpPage } from './pages/StaffHelpPage';
 import { Billing } from './pages/Billing';
 import { JobReport } from './pages/JobReport';
 import { AdminStaffManagement } from './pages/AdminStaffManagement';
@@ -235,6 +236,7 @@ export default function App() {
                   {(role === 'staff' || role === 'supervisor') && (
                     <>
                       <Route path="/staff" element={<StaffDashboard />} />
+                      <Route path="/staff/help" element={<StaffHelpPage />} />
                       <Route path="/staff/jobs" element={<StaffJobsList />} />
                       <Route path="/staff/timesheet" element={<StaffTimesheet />} />
                       <Route path="/staff/job/:jobId" element={<StaffJobView />} />

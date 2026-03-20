@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
-import { ChevronLeft, Loader2, Calendar } from 'lucide-react';
+import { ChevronLeft, Loader2, Calendar, HelpCircle } from 'lucide-react';
 
 interface TimesheetRow {
   id: string;
@@ -54,14 +54,22 @@ export function StaffTimesheet() {
 
   return (
     <div className="min-h-screen bg-slate-950 pb-10">
-      <div className="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-10 flex items-center gap-4 px-4 py-3">
-        <Link to="/staff" className="p-2 rounded-full text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors">
+      <div className="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-10 flex items-center gap-2 px-4 py-3">
+        <Link to="/staff" className="p-2 rounded-full text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors shrink-0">
           <ChevronLeft size={22} />
         </Link>
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="font-black text-lg text-slate-50 tracking-tight uppercase">Timesheet</h1>
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Your hours & attendance history</p>
         </div>
+        <Link
+          to="/staff/help"
+          className="shrink-0 p-2 rounded-xl text-emerald-300 border border-emerald-500/40 bg-slate-900 hover:bg-slate-800"
+          title="Help"
+          aria-label="Staff help"
+        >
+          <HelpCircle size={20} />
+        </Link>
       </div>
 
       <div className="p-4 max-w-2xl mx-auto">

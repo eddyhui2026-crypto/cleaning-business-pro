@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
   XCircle,
   KeyRound,
+  HelpCircle,
 } from 'lucide-react';
 import { StaffAttendancePanel } from '../components/StaffAttendancePanel';
 import { enablePushStaff } from '../lib/pushNotifications';
@@ -235,8 +236,8 @@ export const StaffDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 pb-10">
       {/* HEADER */}
-      <div className="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-10 flex justify-between items-center px-5 py-4">
-        <div>
+      <div className="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-10 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center px-5 py-4">
+        <div className="min-w-0">
           <h1 className="font-black text-xl italic text-slate-50">STAFF PANEL</h1>
           <p className="text-sm text-slate-200 font-semibold">
             {greeting}, {staffDisplayName}.
@@ -245,7 +246,15 @@ export const StaffDashboard = () => {
             {profile?.phone || user?.email}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 justify-end">
+          <Link
+            to="/staff/help"
+            className="p-2 bg-slate-900 text-emerald-300 rounded-xl hover:bg-slate-800 border border-emerald-500/40 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-1.5"
+            title="Help"
+          >
+            <HelpCircle size={18} />
+            <span>Help</span>
+          </Link>
           <Link
             to="/staff/jobs"
             className="p-2 bg-slate-900 text-slate-200 rounded-xl hover:bg-slate-800 border border-slate-700 text-xs font-bold uppercase tracking-widest"
