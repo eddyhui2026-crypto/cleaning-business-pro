@@ -195,6 +195,29 @@ export function AdminHelpPage() {
               Review clock-ins, hours, and pay calculations. Set <strong className="text-slate-100">default pay</strong> (hourly, percentage of job, or fixed) for the company
               and per-staff overrides. Export or use totals for your payroll run.
             </p>
+            <p>
+              <strong className="text-slate-100">How payroll is calculated</strong>
+            </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                We total each staff member&apos;s worked hours from attendance records (clock-in/clock-out) for the selected date range.
+              </li>
+              <li>
+                Pay type is taken from staff-level settings first; if none are set, company default pay settings are used.
+              </li>
+              <li>
+                <strong className="text-slate-100">Hourly:</strong> total hours × hourly rate.
+              </li>
+              <li>
+                <strong className="text-slate-100">Percentage:</strong> staff gets the configured % of eligible completed job value.
+              </li>
+              <li>
+                <strong className="text-slate-100">Fixed:</strong> fixed amount per eligible completed job.
+              </li>
+              <li>
+                Final totals are summary values for payroll processing; you can still review details per staff before running payroll.
+              </li>
+            </ul>
           </Section>
 
           <Section id={HelpAnchor.Reports} title="Reports">
