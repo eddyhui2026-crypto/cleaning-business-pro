@@ -27,6 +27,10 @@ function StaffPayRow({
   initialHourly,
   initialPercentage,
   initialFixed,
+  usesDefaultInitial,
+  defaultHourly,
+  defaultPercentage,
+  defaultFixed,
   defaultLabel,
   onSaved,
   onDownloadPayslip,
@@ -42,6 +46,10 @@ function StaffPayRow({
   initialHourly: string;
   initialPercentage: string;
   initialFixed: string;
+  usesDefaultInitial: boolean;
+  defaultHourly: string;
+  defaultPercentage: string;
+  defaultFixed: string;
   defaultLabel: string;
   onSaved: (updatedProfile: { id: string; pay_type?: string | null; pay_hourly_rate?: number | null; pay_percentage?: number | null; pay_fixed_amount?: number | null }) => void;
   onDownloadPayslip?: (staffId: string, staffName: string) => void;
@@ -50,20 +58,21 @@ function StaffPayRow({
   getAuthHeaders: () => Promise<HeadersInit>;
   toast: { success: (s: string) => void; error: (s: string) => void };
 }) {
-  const [hourly, setHourly] = useState(initialHourly);
-  const [percentage, setPercentage] = useState(initialPercentage);
-  const [fixed, setFixed] = useState(initialFixed);
+  const [hourly, setHourly] = useState(usesDefaultInitial ? defaultHourly : initialHourly);
+  const [percentage, setPercentage] = useState(usesDefaultInitial ? defaultPercentage : initialPercentage);
+  const [fixed, setFixed] = useState(usesDefaultInitial ? defaultFixed : initialFixed);
+  const [usingDefault, setUsingDefault] = useState(usesDefaultInitial);
   const [saving, setSaving] = useState(false);
-  const hasPersonalPay = hourly !== '' || percentage !== '' || fixed !== '';
+  const hasPersonalPay = !usingDefault;
 
   const handleSave = async () => {
     setSaving(true);
     const pt: 'hourly' | 'percentage' | 'fixed' = hourly !== '' ? 'hourly' : percentage !== '' ? 'percentage' : fixed !== '' ? 'fixed' : 'hourly';
     const payload = {
       pay_type: pt,
-      pay_hourly_rate: hourly === '' ? null : Number(hourly),
-      pay_percentage: percentage === '' ? null : Number(percentage),
-      pay_fixed_amount: fixed === '' ? null : Number(fixed),
+      pay_hourly_rate: usingDefault ? null : hourly === '' ? null : Number(hourly),
+      pay_percentage: usingDefault ? null : percentage === '' ? null : Number(percentage),
+      pay_fixed_amount: usingDefault ? null : fixed === '' ? null : Number(fixed),
     };
     try {
       const h = await getAuthHeaders();
@@ -112,7 +121,10 @@ function StaffPayRow({
             min={0}
             step={0.01}
             value={hourly}
-            onChange={(e) => setHourly(e.target.value)}
+            onChange={(e) => {
+              setHourly(e.target.value);
+              setUsingDefault(false);
+            }}
             placeholder="—"
             className="w-20 px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-600 text-slate-50"
           />
@@ -125,7 +137,10 @@ function StaffPayRow({
             max={100}
             step={1}
             value={percentage}
-            onChange={(e) => setPercentage(e.target.value)}
+            onChange={(e) => {
+              setPercentage(e.target.value);
+              setUsingDefault(false);
+            }}
             placeholder="—"
             className="w-16 px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-600 text-slate-50"
           />
@@ -137,7 +152,10 @@ function StaffPayRow({
             min={0}
             step={0.01}
             value={fixed}
-            onChange={(e) => setFixed(e.target.value)}
+            onChange={(e) => {
+              setFixed(e.target.value);
+              setUsingDefault(false);
+            }}
             placeholder="—"
             className="w-20 px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-600 text-slate-50"
           />
@@ -738,10 +756,13 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                 <p className="text-slate-400 text-sm mt-4">No staff in company yet, or filter has no match.</p>
               ) : (
                 <div className="space-y-3 mt-4">
-                  <p className="text-xs text-slate-500">Each row is this employee’s own pay (Save updates only that person). Hours on the left are this period for that employee only. Company default above is edited via Settings / Edit.</p>
+                  <p className="text-xs text-slate-500">New staff auto-fill company default values and show as Default. Once you edit any value in a row, that employee switches to personal pay (Save updates only that person). Hours on the left are this period for that employee only.</p>
                   {payrollRows.map((p) => {
                     const staff = staffList.find((s) => s.id === p.staff_id);
-                    const { initialHourly, initialPercentage, initialFixed } = getInitialPayFromStaff(staff);
+                    const { initialHourly, initialPercentage, initialFixed, usesDefault } = getInitialPayFromStaff(staff);
+                    const defaultHourly = companyPay?.default_hourly_rate != null ? String(companyPay.default_hourly_rate) : '';
+                    const defaultPercentage = companyPay?.default_pay_percentage != null ? String(companyPay.default_pay_percentage) : '';
+                    const defaultFixed = companyPay?.default_fixed_pay != null ? String(companyPay.default_fixed_pay) : '';
                     return (
                       <StaffPayRow
                         key={`payroll-${p.staff_id}`}
@@ -752,6 +773,10 @@ export function AttendanceDashboard({ companyId }: AttendanceDashboardProps) {
                         initialHourly={initialHourly}
                         initialPercentage={initialPercentage}
                         initialFixed={initialFixed}
+                        usesDefaultInitial={usesDefault}
+                        defaultHourly={defaultHourly}
+                        defaultPercentage={defaultPercentage}
+                        defaultFixed={defaultFixed}
                         defaultLabel={companyPayLabel}
                         onSaved={handleStaffPaySaved}
                         onDownloadPayslip={downloadPayslipForStaff}
