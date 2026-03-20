@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CircleHelp, BookOpen } from 'lucide-react';
+import { ChevronLeft, HelpCircle, BookOpen } from 'lucide-react';
 import { AdminBottomNav } from '../components/AdminBottomNav';
 import { HelpAnchor } from '../config/helpAnchors';
 
@@ -72,7 +72,7 @@ export function AdminHelpPage() {
           </button>
           <div className="flex items-center gap-2 text-right min-w-0">
             <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 shrink-0">
-              <CircleHelp size={22} />
+              <HelpCircle size={22} />
             </div>
             <div className="min-w-0">
               <h1 className="font-black text-base sm:text-lg uppercase tracking-tight text-slate-50 truncate">Help &amp; FAQ</h1>

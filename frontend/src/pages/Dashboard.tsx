@@ -27,7 +27,7 @@ import {
   CheckCircle,
   Bell,
   BarChart2,
-  CircleHelp,
+  HelpCircle,
 } from 'lucide-react';
 
 // --- Components & Utils ---
@@ -680,7 +680,7 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
                 title="Help & FAQ"
                 aria-label="Help and FAQ"
               >
-                <CircleHelp size={18} className="sm:w-4 sm:h-4" />
+                <HelpCircle size={18} className="sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Help</span>
               </Link>
               <button

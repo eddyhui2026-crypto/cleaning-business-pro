@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { CircleHelp } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import type { HelpAnchorId } from '../config/helpAnchors';
 
 type Props = {
@@ -19,7 +19,7 @@ export function HelpLink({ anchor, label = 'Help', className = '' }: Props) {
       to={`/admin/help#${anchor}`}
       className={`inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-bold uppercase tracking-wider text-[10px] sm:text-xs transition-colors ${className}`}
     >
-      <CircleHelp size={16} className="shrink-0 opacity-90" aria-hidden />
+      <HelpCircle size={16} className="shrink-0 opacity-90" aria-hidden />
       {label}
     </Link>
   );
