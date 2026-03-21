@@ -28,6 +28,7 @@ import {
   Bell,
   BarChart2,
   HelpCircle,
+  CreditCard,
 } from 'lucide-react';
 
 // --- Components & Utils ---
@@ -681,6 +682,14 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
               <span className="font-black text-lg sm:text-xl text-slate-50 tracking-tighter uppercase italic hidden sm:inline">CleanPro</span>
             </div>
             <div className="flex flex-nowrap items-center justify-end gap-1 sm:gap-2 min-w-0 flex-1 sm:flex-initial overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pl-1">
+              <Link
+                to="/billing"
+                className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/15 font-bold flex items-center gap-1.5 text-xs uppercase tracking-wider min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center shrink-0"
+                title="Plans & upgrade — subscribe during your trial"
+              >
+                <CreditCard size={18} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Plans</span>
+              </Link>
               <Link
                 to="/admin/help"
                 className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 font-bold flex items-center gap-1.5 text-xs uppercase tracking-wider min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 justify-center shrink-0"

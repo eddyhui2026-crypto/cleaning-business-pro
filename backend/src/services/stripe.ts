@@ -91,6 +91,7 @@ export const createCheckoutSession = async (
   plan: string | null | undefined,
   interval: string | null | undefined,
   trialPolicy?: SubscriptionTrialPolicy,
+  existingStripeCustomerId?: string | null,
 ) => {
   try {
     const priceId = getPriceIdForPlan(plan, interval);
@@ -99,7 +100,7 @@ export const createCheckoutSession = async (
         ? [{ promotion_code: AUTO_PROMO_30_OFF_3MO.trim() }]
         : undefined;
 
-    const session = await stripe.checkout.sessions.create({
+    const baseParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: [
         {
@@ -110,13 +111,20 @@ export const createCheckoutSession = async (
       mode: 'subscription',
       success_url: `${process.env.FRONTEND_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/billing`,
-      customer_email: email,
       metadata: {
         companyId: companyId,
       },
       subscription_data: buildSubscriptionTrial(companyId, trialPolicy),
       discounts,
-    });
+    };
+
+    if (existingStripeCustomerId?.trim()) {
+      baseParams.customer = existingStripeCustomerId.trim();
+    } else {
+      baseParams.customer_email = email;
+    }
+
+    const session = await stripe.checkout.sessions.create(baseParams);
 
     return session;
   } catch (error) {
@@ -124,3 +132,14 @@ export const createCheckoutSession = async (
     throw error;
   }
 };
+
+/** Stripe Customer Portal — cancel subscription, update card, invoices (enable in Stripe Dashboard → Billing → Customer portal). */
+export async function createBillingPortalSession(
+  stripeCustomerId: string,
+  returnUrl: string,
+): Promise<Stripe.BillingPortal.Session> {
+  return stripe.billingPortal.sessions.create({
+    customer: stripeCustomerId,
+    return_url: returnUrl,
+  });
+}

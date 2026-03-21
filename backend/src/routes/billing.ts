@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { createCheckoutSession } from '../services/stripe';
+import { createCheckoutSession, createBillingPortalSession } from '../services/stripe';
 import { supabase } from '../lib/supabaseClient';
 import { AuthRequest } from '../middleware/auth';
 
@@ -27,16 +27,51 @@ router.post('/create-checkout-session', async (req: AuthRequest, res: Response):
   try {
     const { data: company } = await supabase
       .from('companies')
-      .select('trial_ends_at')
+      .select('trial_ends_at, stripe_customer_id')
       .eq('id', companyId)
       .single();
 
     const session = await createCheckoutSession(companyId, email, plan, interval, {
       appTrialEndsAtIso: company?.trial_ends_at ?? null,
-    });
+    }, (company as { stripe_customer_id?: string | null } | null)?.stripe_customer_id ?? null);
     res.json({ url: session.url });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/** POST /api/billing/create-portal-session — open Stripe Customer Portal (manage/cancel subscription). */
+router.post('/create-portal-session', async (req: AuthRequest, res: Response): Promise<void> => {
+  const companyId = req.companyId;
+  if (!companyId) {
+    res.status(403).json({ error: 'No company associated with user' });
+    return;
+  }
+
+  const frontend = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+
+  try {
+    const { data: company, error } = await supabase
+      .from('companies')
+      .select('stripe_customer_id')
+      .eq('id', companyId)
+      .single();
+
+    if (error) throw error;
+    const customerId = (company as { stripe_customer_id?: string | null } | null)?.stripe_customer_id?.trim();
+    if (!customerId) {
+      res.status(400).json({
+        error: 'no_stripe_customer',
+        message: 'Subscribe once from Plans & billing first; then you can manage your subscription here.',
+      });
+      return;
+    }
+
+    const session = await createBillingPortalSession(customerId, `${frontend}/admin/settings`);
+    res.json({ url: session.url });
+  } catch (err: any) {
+    console.error('create-portal-session:', err);
+    res.status(500).json({ error: err.message || 'Portal session failed' });
   }
 });
 

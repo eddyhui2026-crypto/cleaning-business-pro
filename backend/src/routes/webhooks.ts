@@ -74,6 +74,15 @@ router.post('/stripe', async (req: Request, res: Response) => {
       if (companyId) {
         // Stripe 訂閱試用期的完結時間（與舊有 companies.trial_ends_at 無關，避免手動改 SQL 後出現「俾咗錢仍當試用過期」）
         const updatePayload: Record<string, unknown> = { subscription_status: 'active' };
+        const cust =
+          typeof session.customer === 'string'
+            ? session.customer
+            : session.customer && typeof session.customer === 'object'
+              ? (session.customer as Stripe.Customer).id
+              : null;
+        if (cust) {
+          updatePayload.stripe_customer_id = cust;
+        }
         try {
           const subId =
             typeof session.subscription === 'string'
@@ -116,9 +125,18 @@ router.post('/stripe', async (req: Request, res: Response) => {
       }
       const stripeStatus = sub.status;
       const paidLike = ['active', 'trialing', 'past_due'].includes(stripeStatus);
+      const customerId =
+        typeof sub.customer === 'string'
+          ? sub.customer
+          : sub.customer && typeof sub.customer === 'object'
+            ? (sub.customer as Stripe.Customer).id
+            : null;
       const updatePayload: Record<string, unknown> = {
         subscription_status: paidLike ? 'active' : 'inactive',
       };
+      if (customerId) {
+        updatePayload.stripe_customer_id = customerId;
+      }
       if (sub.trial_end) {
         updatePayload.trial_ends_at = new Date(sub.trial_end * 1000).toISOString();
       }

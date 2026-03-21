@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, Save, Image as ImageIcon, Loader2, CheckCircle2, Globe, Package, Download, ClipboardList, Users, ChevronLeft, Shield, KeyRound, Lock } from 'lucide-react';
+import { Building2, Mail, Save, Image as ImageIcon, Loader2, CheckCircle2, Globe, Package, Download, ClipboardList, Users, ChevronLeft, Shield, KeyRound, Lock, CreditCard, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { apiUrl } from '../lib/api';
 import { useToast } from '../context/ToastContext';
@@ -22,6 +22,8 @@ interface CompanyData {
   logo_url: string;
   report_footer: string;
   booking_slug: string;
+  /** Set after first successful Stripe Checkout — enables Customer Portal */
+  stripe_customer_id?: string | null;
 }
 
 export const Settings = ({ companyId }: SettingsProps) => {
@@ -43,7 +45,9 @@ export const Settings = ({ companyId }: SettingsProps) => {
     logo_url: '',
     report_footer: '',
     booking_slug: '',
+    stripe_customer_id: null,
   });
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     fetchCompanySettings();
@@ -88,6 +92,7 @@ export const Settings = ({ companyId }: SettingsProps) => {
           logo_url: data.logo_url || '',
           report_footer: data.report_footer || '',
           booking_slug: data.booking_slug || '',
+          stripe_customer_id: (data as { stripe_customer_id?: string | null }).stripe_customer_id ?? null,
         });
       }
     } catch (err: any) {
@@ -247,6 +252,35 @@ export const Settings = ({ companyId }: SettingsProps) => {
     }
   };
 
+  const openBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Please sign in again.');
+        return;
+      }
+      const res = await fetch(apiUrl('/api/billing/create-portal-session'), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      toast.error(data.message || data.error || 'Could not open subscription management.');
+    } catch {
+      toast.error('Network error.');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   if (loading) return (
     <div className="flex h-96 items-center justify-center bg-slate-950">
       <Loader2 className="animate-spin text-emerald-400" size={32} />
@@ -318,6 +352,41 @@ export const Settings = ({ companyId }: SettingsProps) => {
 
         {/* 右側：詳細設定 */}
         <div className="md:col-span-2 space-y-6">
+          <div className="bg-slate-900/80 p-6 md:p-8 rounded-[2.5rem] border border-emerald-500/20 shadow-[0_18px_45px_rgba(15,23,42,0.9)] space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-300 flex items-center gap-2">
+              <CreditCard size={16} /> Billing & subscription
+            </h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Upgrade during your trial, change plan, or manage payment method and cancellation in Stripe&apos;s secure
+              portal.
+            </p>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/billing')}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 text-slate-950 px-5 py-3 text-xs font-black uppercase tracking-wider hover:bg-emerald-400"
+              >
+                Plans & upgrade
+                <ExternalLink size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={openBillingPortal}
+                disabled={portalLoading || !company.stripe_customer_id}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-600 bg-slate-950 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-200 hover:border-emerald-500/50 hover:text-emerald-300 disabled:opacity-45 disabled:pointer-events-none"
+              >
+                {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard size={14} />}
+                Manage subscription
+              </button>
+            </div>
+            {!company.stripe_customer_id && (
+              <p className="text-[11px] text-slate-500">
+                &quot;Manage subscription&quot; unlocks after you complete checkout once (same email as your admin
+                account).
+              </p>
+            )}
+          </div>
+
           <div className="bg-slate-900/80 p-6 md:p-10 rounded-[3rem] border border-slate-800 shadow-[0_18px_45px_rgba(15,23,42,0.9)] space-y-8">
             
             <div className="grid grid-cols-1 gap-6">
