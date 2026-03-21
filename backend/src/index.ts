@@ -21,12 +21,16 @@ import customerRouter from './routes/customer';
 import bookingRouter from './routes/booking';
 import internalRouter from './routes/internal';
 import supportRouter from './routes/support';
+import publicSignupRouter from './routes/publicSignup';
 
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 const isProd = process.env.NODE_ENV === 'production';
+
+// Rate limiting & secure cookies behind proxies (Render, Vercel, etc.)
+app.set('trust proxy', 1);
 
 // CORS: restrict origin in production
 const corsOptions = isProd && process.env.FRONTEND_URL
@@ -68,6 +72,8 @@ app.use('/api/admin/invoices', apiAuth, invoicesRouter);
 app.use('/api/admin/quotes', apiAuth, quotesRouter);
 app.use('/api/customer', customerRouter);
 app.use('/api/booking', bookingRouter);
+// Public signup (trial + welcome email) — rate limited
+app.use('/api/public', publicSignupRouter);
 // Internal API (secret key only, no JWT): e.g. create-trial-account
 app.use('/api/internal', internalRouter);
 // Support reports (bug/feature) - requires JWT + company resolution

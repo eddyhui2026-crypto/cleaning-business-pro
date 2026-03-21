@@ -38,3 +38,11 @@
 
 \- \*\*Database\*\*: Supabase (PostgreSQL)
 
+
+### Trial signup & welcome email
+
+- `/signup` calls `POST /api/public/register-trial` — creates admin + company + profile and emails login link + temporary password (Resend).
+- Backend env: `RESEND_API_KEY`, `EMAIL_FROM` (e.g. `CleanFlow <noreply@yourdomain.com>` after domain verify), `FRONTEND_URL` for links. See `backend/env.example`.
+- In **production**, public signup returns **503** until both `RESEND_API_KEY` and `EMAIL_FROM` are set (avoids accounts with no email).
+- Internal `POST /api/internal/create-trial-account` also sends the same welcome email when Resend is configured.
+

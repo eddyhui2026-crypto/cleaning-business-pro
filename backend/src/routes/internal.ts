@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { supabase } from '../lib/supabaseClient';
+import { createTrialAccount } from '../services/trialAccountService';
+import { sendOwnerWelcomeEmail } from '../services/ownerWelcomeEmail';
 
 const router = Router();
 
@@ -27,27 +28,12 @@ function requireInternalSecret(req: Request, res: Response, next: () => void): v
   next();
 }
 
-function generateTempPassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  let out = '';
-  for (let i = 0; i < 12; i++) {
-    out += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return out;
-}
-
-/** Map staff count to plan (matches landing page: 1–10 starter, 11–20 standard, 21–30 premium) */
-function planFromStaffCount(staffCount: number): 'starter' | 'standard' | 'premium' {
-  if (staffCount <= 10) return 'starter';
-  if (staffCount <= 20) return 'standard';
-  return 'premium';
-}
-
 /**
  * POST /api/internal/create-trial-account
  * Headers: X-Internal-Secret: <INTERNAL_API_SECRET>  OR  Authorization: Bearer <INTERNAL_API_SECRET>
  * Body: { companyName, contactName, email, phone?, staffCount?, trialDays? }
- * Creates: Supabase Auth user → companies row → profiles (admin), returns login URL + temp password.
+ * Creates: Supabase Auth user → companies row → profiles (admin).
+ * Sends welcome email when RESEND_API_KEY + EMAIL_FROM are set.
  */
 router.post(
   '/create-trial-account',
@@ -63,105 +49,55 @@ router.post(
         trialDays?: number;
       };
 
-      const name = (companyName || '').trim();
-      const contact = (contactName || '').trim();
-      const emailTrim = (email || '').trim().toLowerCase();
-
-      if (!name || !contact || !emailTrim) {
-        res.status(400).json({
-          error: 'Missing required fields',
-          message: 'companyName, contactName, and email are required.',
-        });
-        return;
-      }
-
-      const count = typeof staffCount === 'number' ? staffCount : 10;
-      const plan = planFromStaffCount(count);
-      const days = typeof trialDays === 'number' && trialDays > 0 ? trialDays : 14;
-      const trialEndsAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-
-      const tempPassword = generateTempPassword();
-
-      const { data: authUser, error: authErr } = await supabase.auth.admin.createUser({
-        email: emailTrim,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: { full_name: contact, company_name: name },
+      const result = await createTrialAccount({
+        companyName: companyName || '',
+        contactName: contactName || '',
+        email: email || '',
+        phone: phone || null,
+        staffCount: typeof staffCount === 'number' ? staffCount : undefined,
+        trialDays: typeof trialDays === 'number' ? trialDays : undefined,
       });
 
-      if (authErr) {
-        console.error('Internal create-trial createUser error:', authErr);
-        res.status(400).json({
-          error: 'Failed to create login account',
-          message: authErr.message,
-        });
-        return;
-      }
-      if (!authUser.user) {
-        res.status(500).json({ error: 'Auth returned no user' });
-        return;
-      }
-
-      const userId = authUser.user.id;
-
-      const { data: company, error: companyErr } = await supabase
-        .from('companies')
-        .insert({
-          name,
-          plan,
-          owner_id: userId,
-          subscription_status: 'trialing',
-          trial_ends_at: trialEndsAt,
-          contact_email: emailTrim,
-        })
-        .select('id')
-        .single();
-
-      if (companyErr || !company) {
-        console.error('Internal create-trial company insert error:', companyErr);
-        res.status(500).json({
-          error: 'Company creation failed',
-          message: (companyErr as any)?.message ?? 'Insert failed',
-        });
-        return;
-      }
-
-      const { error: profileErr } = await supabase.from('profiles').insert({
-        id: userId,
-        company_id: company.id,
-        full_name: contact,
-        email: emailTrim,
-        phone: (phone || '').trim() || null,
-        role: 'admin',
+      const emailResult = await sendOwnerWelcomeEmail({
+        to: result.email,
+        contactName: result.contactName,
+        companyName: result.companyName,
+        loginUrl: result.loginUrl,
+        temporaryPassword: result.temporaryPassword,
+        trialEndsAt: result.trialEndsAt,
       });
 
-      if (profileErr) {
-        console.error('Internal create-trial profile insert error:', profileErr);
-        res.status(500).json({
-          error: 'Profile creation failed',
-          message: (profileErr as any)?.message ?? 'Insert failed',
-        });
-        return;
+      if (!emailResult.ok) {
+        console.warn('[internal create-trial] Welcome email not sent:', emailResult.error);
       }
-
-      const baseUrl = (process.env.FRONTEND_URL || 'https://cleaning-business-pro.vercel.app').replace(/\/$/, '');
-      const loginUrl = `${baseUrl}/login`;
 
       res.status(201).json({
-        loginUrl,
-        email: emailTrim,
-        temporaryPassword: tempPassword,
-        companyName: name,
-        companyId: company.id,
-        trialEndsAt,
-        plan,
-        message: 'Trial account created. Send the customer the login URL, email, and temporary password.',
+        loginUrl: result.loginUrl,
+        email: result.email,
+        temporaryPassword: result.temporaryPassword,
+        companyName: result.companyName,
+        companyId: result.companyId,
+        trialEndsAt: result.trialEndsAt,
+        plan: result.plan,
+        emailSent: emailResult.ok,
+        message: emailResult.ok
+          ? 'Trial account created. Login details were emailed to the customer.'
+          : 'Trial account created. Email not sent (configure RESEND_API_KEY + EMAIL_FROM) — send login URL, email, and temporary password manually.',
       });
     } catch (err: any) {
+      const status = typeof err?.status === 'number' ? err.status : 500;
+      const msg = err?.message || String(err);
+      if (status === 400) {
+        res.status(400).json({
+          error: 'Failed to create login account',
+          message: msg,
+        });
+        return;
+      }
       console.error('Internal create-trial-account error:', err);
       res.status(500).json({
         error: 'Internal server error',
-        message: err?.message ?? String(err),
+        message: msg,
       });
     }
   }
