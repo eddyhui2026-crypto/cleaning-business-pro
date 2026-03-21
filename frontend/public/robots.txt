@@ -1,0 +1,13 @@
+# https://cleanflow.harbix.app — update Sitemap URL if you use another domain
+User-agent: *
+Allow: /
+
+# App shell routes (optional hints; SPA still serves index.html)
+Disallow: /dashboard
+Disallow: /admin/
+Disallow: /customer
+Disallow: /staff
+Disallow: /billing
+Disallow: /report/
+
+Sitemap: https://cleanflow.harbix.app/sitemap.xml
