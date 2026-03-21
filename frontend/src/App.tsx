@@ -202,13 +202,7 @@ export default function App() {
                       />
                       <Route
                         path="/billing"
-                        element={
-                          subStatus === 'active' ? (
-                            <Navigate to="/dashboard" replace />
-                          ) : (
-                            <Billing companyId={companyId} email={session.user.email} />
-                          )
-                        }
+                        element={<Billing companyId={companyId} email={session.user.email} />}
                       />
                       {ADMIN_ROUTES.map(({ path, element }) => (
                         <Route
