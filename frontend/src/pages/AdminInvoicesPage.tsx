@@ -372,22 +372,31 @@ export function AdminInvoicesPage({ companyId }: AdminInvoicesPageProps) {
         backLabel="Back to Dashboard"
         variant="dark"
         action={
-          <div className="flex flex-wrap items-center gap-2">
-            <HelpLink anchor={HelpAnchor.Invoices} className="px-1" />
+          <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2">
+            <HelpLink anchor={HelpAnchor.Invoices} className="px-0.5" iconOnlyBelowSm />
             <button
+              type="button"
               onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl font-semibold hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 shadow-[0_10px_25px_rgba(16,185,129,0.45)]"
+              className="flex shrink-0 items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-4 sm:py-2.5 bg-emerald-500 text-white rounded-xl text-[11px] sm:text-sm font-semibold hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 shadow-[0_10px_25px_rgba(16,185,129,0.45)] whitespace-nowrap"
+              title="Payment defaults"
+              aria-label="Payment defaults"
             >
-              <Receipt size={18} /> Payment defaults
+              <Receipt size={16} className="sm:w-[18px] sm:h-[18px] shrink-0" />
+              <span className="max-sm:hidden">Payment defaults</span>
             </button>
             <button
+              type="button"
               onClick={() => {
                 setCreateOpen(true);
                 setCreateCustomerId(newCustomerId || '');
               }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-slate-950 rounded-xl font-semibold hover:bg-emerald-400 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+              className="flex shrink-0 items-center gap-1.5 sm:gap-2 px-2.5 py-2 sm:px-4 sm:py-2.5 bg-emerald-500 text-slate-950 rounded-xl text-[11px] sm:text-sm font-semibold hover:bg-emerald-400 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-950 whitespace-nowrap"
+              title="Create invoice"
+              aria-label="Create invoice"
             >
-              <Plus size={18} /> Create invoice
+              <Plus size={16} className="sm:w-[18px] sm:h-[18px] shrink-0" />
+              <span className="sm:hidden">Invoice</span>
+              <span className="hidden sm:inline">Create invoice</span>
             </button>
           </div>
         }
