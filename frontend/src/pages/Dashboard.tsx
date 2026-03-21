@@ -328,6 +328,13 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   const completedJobs = events.filter(e => e.extendedProps.status === 'completed').length;
   const completionRate = totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0;
   const activeStaffCount = staffList.length;
+  const planUsage = plan?.usage;
+  const staffCountForPlan = planUsage?.staffCount ?? activeStaffCount;
+  const staffPlanLimit = planUsage?.staffLimit;
+  const staffStatValue =
+    staffPlanLimit != null ? `${staffCountForPlan} / ${staffPlanLimit}` : `${staffCountForPlan}`;
+  const staffStatSubtitle =
+    staffPlanLimit == null && planUsage != null ? 'Unlimited on plan' : undefined;
   const now = new Date();
   const todayIso = now.toISOString().slice(0, 10);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -919,7 +926,13 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
                     <StatCard icon={<DollarSign size={20} />} label="Cash today" value={`£${todayCashTotal.toFixed(2)}`} />
                     <StatCard icon={<CheckCircle2 size={20} />} label="Jobs finished" value={`${completedJobs} / ${totalJobs}`} subtitle={`Today: ${todayJobsCompleted} / ${todayJobsTotal}`} />
                     <StatCard icon={<TrendingUp size={20} />} label="Completion rate" value={`${completionRate}%`} />
-                    <StatCard icon={<Users size={20} />} label="Active staff" value={activeStaffCount.toString()} />
+                    <StatCard
+                      icon={<Users size={20} />}
+                      label="Staff"
+                      hint="Count vs your plan limit"
+                      value={staffStatValue}
+                      subtitle={staffStatSubtitle}
+                    />
                   </div>
 
                   {dashboardInvoices.length > 0 && (() => {
