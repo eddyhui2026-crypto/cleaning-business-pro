@@ -103,7 +103,7 @@ export function CleanFlowHome() {
               href={TRIAL_URL}
               className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-lg shadow-emerald-500/40 hover:bg-emerald-300"
             >
-              Start Free Trial
+              Join beta
               <ArrowRight size={14} />
             </a>
           </div>
@@ -120,7 +120,7 @@ export function CleanFlowHome() {
               href={TRIAL_URL}
               className="inline-flex items-center gap-1 rounded-full bg-emerald-400 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-950"
             >
-              Try Free
+              Join beta
             </a>
           </div>
         </nav>
@@ -145,7 +145,7 @@ export function CleanFlowHome() {
 
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-amber-200">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
-              <span>Launch offer · 14-day free trial + first 3 months 30% off</span>
+              <span>Now in beta · full access while we improve with your feedback</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -153,7 +153,7 @@ export function CleanFlowHome() {
                 href={TRIAL_URL}
                 className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-6 py-3 text-xs font-black uppercase tracking-[0.25em] text-slate-950 shadow-xl shadow-emerald-500/40 hover:bg-emerald-300"
               >
-                Start Free Trial Now
+                Join the beta
                 <ArrowRight size={16} />
               </a>
               <a
@@ -173,7 +173,7 @@ export function CleanFlowHome() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={14} className="text-emerald-300" />
-                <span>14‑day free trial · No credit card</span>
+                <span>Beta access · No credit card required</span>
               </div>
             </div>
           </div>
@@ -360,7 +360,7 @@ export function CleanFlowHome() {
             </p>
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-200">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
-              <span>Launch offer · 14-day free trial + first 3 months 30% off</span>
+              <span>Beta programme · planned prices below · trial terms at launch</span>
             </div>
             <div className="flex justify-center">
               <div className="inline-flex rounded-xl bg-slate-900/70 border border-white/10 p-1">
@@ -448,8 +448,9 @@ export function CleanFlowHome() {
           </div>
 
           <p className="mt-4 text-center text-[11px] text-slate-400">
-            Every new subscription includes <span className="font-semibold">14-day free trial</span> and
-            <span className="font-semibold"> 30% off for the first 3 months</span>.
+            <span className="font-semibold text-slate-300">Beta testing:</span> we&apos;re onboarding cleaning
+            companies now. Commercial trial length and launch offers (including thank-you perks for beta testers)
+            will be confirmed at general release.
           </p>
         </section>
 
@@ -510,8 +511,8 @@ export function CleanFlowHome() {
                   Start Growing With Less Stress
                 </h2>
                 <p className="mt-2 text-sm font-medium text-emerald-950/80">
-                  Start your trial in minutes and see how much smoother your operation feels when everything
-                  runs in one place.
+                  Join the beta in minutes and see how much smoother your operation feels when everything runs
+                  in one place — your feedback helps us get launch-ready.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-3 md:justify-end">
@@ -519,7 +520,7 @@ export function CleanFlowHome() {
                   href={TRIAL_URL}
                   className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-xs font-black uppercase tracking-[0.25em] text-emerald-200 hover:bg-slate-900"
                 >
-                  Start Free Trial
+                  Join the beta
                   <ArrowRight size={16} />
                 </a>
                 <a
@@ -657,7 +658,7 @@ function PricingCard({ name, price, interval, description, highlights, popular }
           popular ? 'bg-emerald-400 text-slate-950 hover:bg-emerald-300' : 'bg-slate-900 text-emerald-200 hover:bg-slate-800'
         }`}
       >
-        Start Free Trial
+        Join the beta
       </a>
     </div>
   );

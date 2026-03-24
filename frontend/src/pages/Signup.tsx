@@ -57,10 +57,10 @@ export const Signup = () => {
           <div className="md:w-1/2 space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-400/10 border border-emerald-400/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-emerald-200">
               <Sparkles className="h-3 w-3" />
-              <span>14‑day free trial</span>
+              <span>Now in beta</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Start your CleanFlow trial
+              Join the CleanFlow beta
             </h1>
             <p className="text-sm text-slate-300/80">
               Create your company account in minutes. We&apos;ll email your login link, temporary password, and a short
@@ -69,7 +69,7 @@ export const Signup = () => {
             <ul className="mt-2 space-y-1 text-xs text-slate-400">
               <li>• No credit card required to start.</li>
               <li>• Check your inbox (and spam) for login details right after you sign up.</li>
-              <li>• Full access to all features during the trial.</li>
+              <li>• Full access to all features while we&apos;re in beta — your feedback helps us improve.</li>
             </ul>
           </div>
 
@@ -214,7 +214,7 @@ export const Signup = () => {
                   </>
                 ) : (
                   <>
-                    Create my trial account
+                    Create my beta account
                     <ArrowRight size={14} />
                   </>
                 )}
