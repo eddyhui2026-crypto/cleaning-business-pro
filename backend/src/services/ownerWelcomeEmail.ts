@@ -48,8 +48,11 @@ export async function sendOwnerWelcomeEmail(payload: OwnerWelcomeEmailPayload): 
 <html>
 <body style="font-family: system-ui, -apple-system, Segoe UI, sans-serif; line-height: 1.5; color: #0f172a; max-width: 560px;">
   <p>Hi ${escapeHtml(firstName)},</p>
-  <p>Welcome to <strong>CleanFlow</strong> — your trial account for <strong>${escapeHtml(payload.companyName)}</strong> is ready.</p>
-  <p>You have full access until <strong>${escapeHtml(trialEnd)}</strong> (14-day trial). Sign in with the details below, then change your password from your account settings when you can.</p>
+  <p>Welcome to <strong>CleanFlow</strong> — your <strong>beta</strong> access for <strong>${escapeHtml(payload.companyName)}</strong> is ready.</p>
+  <p>You may see an initial access period ending on <strong>${escapeHtml(trialEnd)}</strong> (this can look like a 14-day trial in the system). <strong>During beta that doesn’t cut you off</strong> — we’ll <strong>extend your access</strong> so you can keep testing until we’re ready to launch.</p>
+  <p>When we <strong>officially launch</strong>, we’ll set a <strong>fresh 14-day trial</strong> for your team and send you a <strong>permanent 30% discount code</strong> as a thank-you for beta testing.</p>
+  <p>We’d really value your <strong>honest feedback</strong> — what works, what’s confusing, what you’d like changed — so we can improve before launch.</p>
+  <p>Sign in with the details below, then change your password from your account settings when you can.</p>
   <table style="margin: 20px 0; padding: 16px; background: #f1f5f9; border-radius: 12px; width: 100%; border-collapse: collapse;">
     <tr><td style="padding: 4px 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Login page</td></tr>
     <tr><td style="padding: 4px 0;"><a href="${escapeHtml(payload.loginUrl)}" style="color: #059669; font-weight: 600;">${escapeHtml(payload.loginUrl)}</a></td></tr>
@@ -66,8 +69,13 @@ export async function sendOwnerWelcomeEmail(payload: OwnerWelcomeEmailPayload): 
   const text = [
     `Hi ${firstName},`,
     '',
-    `Welcome to CleanFlow — your trial for "${payload.companyName}" is ready.`,
-    `Trial ends: ${trialEnd}`,
+    `Welcome to CleanFlow — your beta access for "${payload.companyName}" is ready.`,
+    '',
+    `You may see an initial access period ending on ${trialEnd} (it can look like a 14-day trial in the system). During beta that doesn't cut you off — we'll extend your access so you can keep testing until we launch.`,
+    '',
+    `When we officially launch, we'll set a fresh 14-day trial for your team and send you a permanent 30% discount code as a thank-you for beta testing.`,
+    '',
+    `We'd really value your honest feedback — what works, what's confusing, what you'd like changed — so we can improve before launch.`,
     '',
     `Login: ${payload.loginUrl}`,
     `Email: ${payload.to}`,
@@ -82,7 +90,7 @@ export async function sendOwnerWelcomeEmail(payload: OwnerWelcomeEmailPayload): 
     const { data, error } = await resend.emails.send({
       from,
       to: [payload.to],
-      subject: `Welcome to CleanFlow — your login details (${payload.companyName})`,
+      subject: `Welcome to CleanFlow beta — your login details (${payload.companyName})`,
       html,
       text,
     });
