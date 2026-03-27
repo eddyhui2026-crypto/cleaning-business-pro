@@ -15,6 +15,7 @@ import {
   XCircle,
   KeyRound,
   HelpCircle,
+  ClipboardList,
 } from 'lucide-react';
 import { StaffAttendancePanel } from '../components/StaffAttendancePanel';
 import { enablePushStaff } from '../lib/pushNotifications';
@@ -188,6 +189,36 @@ export const StaffDashboard = () => {
 
   const handleNavigate = (address: string) => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+  };
+
+  const handleChecklistToggle = async (jobId: string, taskId: string) => {
+    const job = jobs.find((j) => j.id === jobId);
+    if (!job || job.status === 'completed') return;
+    const checklist = job.details?.checklist;
+    if (!checklist?.tasks?.length) return;
+    const prevDetails = job.details;
+    const tasks = (checklist.tasks as any[]).map((t: any) =>
+      t.id === taskId
+        ? { ...t, completed: !t.completed, completed_at: !t.completed ? new Date().toISOString() : undefined }
+        : t
+    );
+    const newDetails = { ...(job.details || {}), checklist: { ...checklist, tasks } };
+    setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, details: newDetails } : j)));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+      const res = await fetch(apiUrl(`/api/jobs/${jobId}`), {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ details: newDetails }),
+      });
+      if (!res.ok) {
+        setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, details: prevDetails } : j)));
+      }
+    } catch {
+      setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, details: prevDetails } : j)));
+    }
   };
 
   const today = new Date();
@@ -487,6 +518,51 @@ export const StaffDashboard = () => {
               </div>
               <p className="text-[9px] text-slate-500 mt-2 italic">{DATA_RETENTION_SHORT}</p>
             </div>
+            )}
+
+            {/* Checklist — above address so staff see it without opening Mission Details */}
+            {job.details?.checklist?.tasks?.length > 0 && (
+              <div className="mb-4 rounded-[1.5rem] border border-emerald-500/30 bg-emerald-500/5 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ClipboardList size={16} className="text-emerald-300 shrink-0" />
+                  <h3 className="font-black text-emerald-100 text-[11px] uppercase tracking-[0.15em]">Checklist</h3>
+                </div>
+                <p className="text-slate-400 text-[11px] mb-3">
+                  {job.details.checklist.template_name} · {job.details.checklist.tasks.filter((t: any) => t.completed).length}/
+                  {job.details.checklist.tasks.length} done
+                </p>
+                <ul className="space-y-0">
+                  {(job.details.checklist.tasks as any[])
+                    .slice()
+                    .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
+                    .map((t: any) => (
+                      <li key={t.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleChecklistToggle(job.id, t.id)}
+                          disabled={job.status === 'completed'}
+                          className="w-full flex items-center gap-3 py-2.5 border-b border-emerald-500/10 last:border-0 text-left rounded-lg active:bg-emerald-500/10 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                        >
+                          <span
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                              t.completed ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500'
+                            }`}
+                          >
+                            {t.completed ? '✓' : '—'}
+                          </span>
+                          <span
+                            className={
+                              t.completed ? 'text-slate-500 text-sm line-through' : 'text-slate-100 text-sm font-medium'
+                            }
+                          >
+                            {t.label}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+                <p className="text-slate-500 text-[9px] mt-2">Tap to tick. Shown on the Service Report.</p>
+              </div>
             )}
 
             {/* NAVIGATION BUTTON */}
