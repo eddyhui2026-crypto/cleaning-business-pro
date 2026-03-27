@@ -29,6 +29,7 @@ import {
   BarChart2,
   HelpCircle,
   CreditCard,
+  Loader2,
 } from 'lucide-react';
 
 // --- Components & Utils ---
@@ -84,6 +85,7 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   const [mapDrawerOpen, setMapDrawerOpen] = useState(false);
   const teamScrollRef = useRef<HTMLDivElement>(null);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+  const [invoiceCreatingJobId, setInvoiceCreatingJobId] = useState<string | null>(null);
   const [pushLoading, setPushLoading] = useState(false);
   const [pushStatus, setPushStatus] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -128,12 +130,13 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
   // --- 1. 核心數據抓取 ---
   const FETCH_TIMEOUT_MS = 12000;
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (options?: { quiet?: boolean }) => {
     if (!companyId) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    const quiet = options?.quiet === true;
+    if (!quiet) setLoading(true);
     setSyncError(null);
     try {
       const doFetch = async () => {
@@ -284,9 +287,43 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
       const msg = err instanceof Error ? err.message : 'Sync failed';
       setSyncError(msg === 'Request timeout' ? 'Request timeout. Is the backend running (npm run backend)? Try refresh or Retry.' : msg);
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   }, [companyId, navigate]);
+
+  const createInvoiceFromDashboardJob = useCallback(
+    async (jobId: string) => {
+      setInvoiceCreatingJobId(jobId);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+        const res = await fetch(apiUrl('/api/admin/invoices/from-job'), {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ job_id: jobId }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 409 && (data as { invoice_id?: string }).invoice_id) {
+          toast.success('Invoice already exists — opening it.');
+          navigate(`/admin/invoices?invoice=${encodeURIComponent((data as { invoice_id: string }).invoice_id)}`);
+          return;
+        }
+        if (!res.ok) {
+          toast.error((data as { error?: string }).error || 'Could not create invoice');
+          return;
+        }
+        toast.success('Draft invoice created.');
+        await fetchData({ quiet: true });
+        navigate(`/admin/invoices?invoice=${encodeURIComponent((data as { id: string }).id)}`);
+      } catch {
+        toast.error('Could not create invoice');
+      } finally {
+        setInvoiceCreatingJobId(null);
+      }
+    },
+    [fetchData, navigate, toast],
+  );
 
   useEffect(() => {
     fetchData();
@@ -1147,10 +1184,14 @@ export const Dashboard = ({ companyId }: { companyId: string | null }) => {
                                         ) : status === 'completed' ? (
                                           <button
                                             type="button"
-                                            onClick={() => navigate(`/admin/jobs/new?fromJob=${encodeURIComponent(job.id)}&returnTo=invoices`)}
-                                            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline"
+                                            disabled={invoiceCreatingJobId === ev.id}
+                                            onClick={() => job.id && createInvoiceFromDashboardJob(job.id)}
+                                            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline disabled:opacity-50 inline-flex items-center gap-1"
                                           >
-                                            Create
+                                            {invoiceCreatingJobId === ev.id ? (
+                                              <Loader2 className="animate-spin" size={12} />
+                                            ) : null}
+                                            Create invoice
                                           </button>
                                         ) : (
                                           <span className="text-xs text-slate-500">None</span>

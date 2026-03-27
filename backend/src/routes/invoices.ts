@@ -6,6 +6,7 @@ import { requireAdmin } from '../middleware/requireAdmin';
 import { addVatToAmount } from '../constants/vat';
 import { generateInvoicePdf } from '../services/invoicePdf';
 import { sendInvoiceEmail } from '../services/notifications';
+import { ensureCustomerForCompany } from '../services/customerService';
 
 const router = Router();
 
@@ -192,6 +193,115 @@ router.post('/', requireAdmin, async (req: AuthRequest, res: Response): Promise<
       .single();
     if (error) throw error;
     res.status(201).json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message ?? 'Internal server error' });
+  }
+});
+
+/** POST /api/admin/invoices/from-job — Draft invoice from a completed job (Today’s jobs “Create”). */
+router.post('/from-job', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
+  const companyId = req.companyId;
+  if (!companyId) {
+    res.status(403).json({ error: 'No company' });
+    return;
+  }
+  const jobId = typeof req.body?.job_id === 'string' ? req.body.job_id.trim() : '';
+  if (!jobId) {
+    res.status(400).json({ error: 'job_id is required' });
+    return;
+  }
+  try {
+    const { data: existing } = await supabase
+      .from('invoices')
+      .select('id')
+      .eq('company_id', companyId)
+      .eq('job_id', jobId)
+      .maybeSingle();
+    if (existing) {
+      res.status(409).json({
+        error: 'Invoice already exists for this job',
+        invoice_id: (existing as { id: string }).id,
+      });
+      return;
+    }
+
+    const { data: job, error: jobErr } = await supabase
+      .from('jobs')
+      .select('id, company_id, customer_id, client_name, address, price, price_includes_vat, details, status')
+      .eq('id', jobId)
+      .eq('company_id', companyId)
+      .maybeSingle();
+    if (jobErr || !job) {
+      res.status(404).json({ error: 'Job not found' });
+      return;
+    }
+    if ((job as any).status !== 'completed') {
+      res.status(400).json({ error: 'Job must be completed before creating an invoice' });
+      return;
+    }
+
+    let customerId = (job as any).customer_id as string | null;
+    if (!customerId) {
+      const details = (job as any).details as Record<string, unknown> | null | undefined;
+      const phone = typeof details?.client_phone === 'string' ? details.client_phone.trim() : '';
+      if (!phone) {
+        res.status(400).json({
+          error:
+            'This job has no CRM customer. Add a phone number in the job’s customer details (or edit the job), then try again.',
+        });
+        return;
+      }
+      const emailRaw = typeof details?.client_email === 'string' ? details.client_email.trim() : '';
+      const { customer } = await ensureCustomerForCompany(companyId, {
+        full_name: ((job as any).client_name || 'Customer') as string,
+        phone,
+        email: emailRaw || null,
+        address: typeof (job as any).address === 'string' ? (job as any).address : null,
+      });
+      customerId = customer.id as string;
+      await supabase
+        .from('jobs')
+        .update({ customer_id: customerId })
+        .eq('id', jobId)
+        .eq('company_id', companyId);
+    }
+
+    const priceNum = parseFloat(String((job as any).price ?? '0')) || 0;
+    const clientName = ((job as any).client_name || 'Client') as string;
+    const line_items = [
+      {
+        description: `Cleaning service — ${clientName}`,
+        quantity: 1,
+        unit_price: priceNum,
+        amount: priceNum,
+      },
+    ];
+    const subtotal = line_items.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+    const chargeVat = (job as any).price_includes_vat === false;
+    const total = chargeVat ? addVatToAmount(subtotal) : subtotal;
+    const invoiceNumber = await nextInvoiceNumber(companyId);
+    const issuedAt = new Date().toISOString().slice(0, 10);
+    const dueAt = issuedAt;
+
+    const { data: inv, error: invErr } = await supabase
+      .from('invoices')
+      .insert({
+        company_id: companyId,
+        customer_id: customerId,
+        job_id: jobId,
+        invoice_number: invoiceNumber,
+        status: 'draft',
+        total,
+        charge_vat: chargeVat,
+        currency: 'GBP',
+        issued_at: issuedAt,
+        due_at: dueAt,
+        line_items,
+      })
+      .select()
+      .single();
+    if (invErr) throw invErr;
+    res.status(201).json(inv);
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? 'Internal server error' });
   }
