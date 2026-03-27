@@ -67,9 +67,10 @@ app.use('/api/jobs', apiAuth, jobsRouter);
 // Reports: public GET /report/:token + protected GET /stats/:companyId (auth applied in router)
 app.use('/api/reports', reportsRouter);
 app.use('/api/billing', apiAuth, billingRouter);
-app.use('/api/admin', apiAuth, adminRouter);
+// More specific /api/admin/* paths FIRST — generic /api/admin catches all /api/admin/... and can prevent nested routers from running reliably.
 app.use('/api/admin/invoices', apiAuth, invoicesRouter);
 app.use('/api/admin/quotes', apiAuth, quotesRouter);
+app.use('/api/admin', apiAuth, adminRouter);
 app.use('/api/customer', customerRouter);
 app.use('/api/booking', bookingRouter);
 // Public signup (trial + welcome email) — rate limited
