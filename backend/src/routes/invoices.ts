@@ -35,6 +35,44 @@ async function nextInvoiceNumber(companyId: string): Promise<string> {
   return `${prefix}${String(lastNum + 1).padStart(4, '0')}`;
 }
 
+/** issue date YYYY-MM-DD + whole calendar days (UTC). */
+function addCalendarDays(issuedYmd: string, days: number): string {
+  const ymd = issuedYmd.slice(0, 10);
+  const parts = ymd.split('-').map(Number);
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return ymd;
+  const [y, m, d] = parts;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0, 10);
+}
+
+/**
+ * Due date for new invoices: optional explicit due_at from client;
+ * else companies.default_payment_terms_days (0 = same day as issued);
+ * if that column is unset, default 14 days (typical UK B2B).
+ */
+async function resolveInvoiceDueAt(
+  companyId: string,
+  issuedAt: string,
+  requestDueAt?: string | null,
+): Promise<string> {
+  const trimmed = typeof requestDueAt === 'string' ? requestDueAt.trim().slice(0, 10) : '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  const { data } = await supabase
+    .from('companies')
+    .select('default_payment_terms_days')
+    .eq('id', companyId)
+    .maybeSingle();
+  const raw = (data as { default_payment_terms_days?: number | null } | null)?.default_payment_terms_days;
+  let days = 14;
+  if (raw !== null && raw !== undefined) {
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0) days = Math.min(365, Math.floor(n));
+  }
+  return addCalendarDays(issuedAt, days);
+}
+
 /** GET /api/admin/invoices/payments — List payments for company. */
 router.get('/payments', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   const companyId = req.companyId;
@@ -172,7 +210,7 @@ router.post('/', requireAdmin, async (req: AuthRequest, res: Response): Promise<
   try {
     const invoiceNumber = await nextInvoiceNumber(companyId);
     const issuedAt = new Date().toISOString().slice(0, 10);
-    const dueAt = due_at?.slice(0, 10) || issuedAt;
+    const dueAt = await resolveInvoiceDueAt(companyId, issuedAt, due_at);
     const { data, error } = await supabase
       .from('invoices')
       .insert({
@@ -281,7 +319,7 @@ router.post('/from-job', requireAdmin, async (req: AuthRequest, res: Response): 
     const total = chargeVat ? addVatToAmount(subtotal) : subtotal;
     const invoiceNumber = await nextInvoiceNumber(companyId);
     const issuedAt = new Date().toISOString().slice(0, 10);
-    const dueAt = issuedAt;
+    const dueAt = await resolveInvoiceDueAt(companyId, issuedAt, null);
 
     const { data: inv, error: invErr } = await supabase
       .from('invoices')

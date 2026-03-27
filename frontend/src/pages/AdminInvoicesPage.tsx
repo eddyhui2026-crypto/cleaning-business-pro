@@ -104,13 +104,13 @@ export function AdminInvoicesPage({ companyId }: AdminInvoicesPageProps) {
           setDefaultInstructionsDraft((companyData as any).default_payment_instructions || '');
           setInvoicePrefixDraft((companyData as any).invoice_number_prefix || '');
           const termsDaysRaw = (companyData as any).default_payment_terms_days;
-          const termsDays =
-            termsDaysRaw != null && !Number.isNaN(Number(termsDaysRaw)) ? Number(termsDaysRaw) : null;
-          setDefaultTermsDraft(termsDays != null ? String(termsDays) : '');
-          if (termsDays != null && termsDays > 0) {
+          const hasExplicitTerms = termsDaysRaw != null && termsDaysRaw !== '' && !Number.isNaN(Number(termsDaysRaw));
+          setDefaultTermsDraft(hasExplicitTerms ? String(termsDaysRaw) : '');
+          const termsDaysForInvoice = hasExplicitTerms ? Number(termsDaysRaw) : 14;
+          {
             const today = new Date();
             const due = new Date(today);
-            due.setDate(today.getDate() + termsDays);
+            due.setDate(today.getDate() + Math.max(0, termsDaysForInvoice));
             setCreateDueAt(due.toISOString().slice(0, 10));
           }
         }
