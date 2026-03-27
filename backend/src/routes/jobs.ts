@@ -7,8 +7,30 @@ import { ensureCustomerForCompany, sendWelcomeEmail } from '../services/customer
 import { notifyCustomerJobCompleted } from '../services/notifications';
 import { calculateCleanerPayForJob } from '../services/cleanerPay';
 import { notifyStaff } from '../services/pushNotificationService';
+import {
+  mergeDefaultChecklistIntoJob,
+  pickDefaultChecklistTemplate,
+  snapshotFromTemplate,
+} from '../services/jobChecklist';
 
 const router = Router();
+
+async function getDefaultChecklistSnapshotForCompany(companyId: string) {
+  const { data, error } = await supabase
+    .from('companies')
+    .select('checklist_templates')
+    .eq('id', companyId)
+    .maybeSingle();
+  if (error || !data) return null;
+  const template = pickDefaultChecklistTemplate((data as { checklist_templates?: unknown }).checklist_templates);
+  if (!template) return null;
+  return snapshotFromTemplate(template);
+}
+
+async function jobWithDefaultChecklist(job: any, companyId: string) {
+  const snap = await getDefaultChecklistSnapshotForCompany(companyId);
+  return mergeDefaultChecklistIntoJob(job, snap);
+}
 
 const JOB_UPDATE_WHITELIST = [
   'client_name',
@@ -109,7 +131,12 @@ router.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
       invoice: job.id ? invoiceByJobId[job.id] || null : null,
     }));
 
-    res.json(withInvoice);
+    const checklistSnapshot = await getDefaultChecklistSnapshotForCompany(companyId);
+    const withChecklist = checklistSnapshot
+      ? withInvoice.map((j: any) => mergeDefaultChecklistIntoJob(j, checklistSnapshot))
+      : withInvoice;
+
+    res.json(withChecklist);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -161,7 +188,12 @@ router.get('/staff/:staffId', async (req: AuthRequest, res: Response): Promise<v
       .range(fromIndex, toIndex);
 
     if (error) throw error;
-    res.json(jobs ?? []);
+    const list = jobs ?? [];
+    const checklistSnapshot = await getDefaultChecklistSnapshotForCompany(companyId);
+    const withChecklist = checklistSnapshot
+      ? list.map((j: any) => mergeDefaultChecklistIntoJob(j, checklistSnapshot))
+      : list;
+    res.json(withChecklist);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -337,7 +369,8 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
       .eq('job_id', jobId)
       .maybeSingle();
     (job as any).invoice = inv ? { id: inv.id, invoice_number: inv.invoice_number, status: inv.status } : null;
-    res.json(job);
+    const merged = await jobWithDefaultChecklist(job, companyId);
+    res.json(merged);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -373,7 +406,8 @@ router.post('/check-in/:jobId', async (req: AuthRequest, res: Response): Promise
       .single();
 
     if (error) throw error;
-    res.json(data);
+    const out = companyId ? await jobWithDefaultChecklist(data, companyId) : data;
+    res.json(out);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -416,7 +450,8 @@ router.post('/complete/:jobId', async (req: AuthRequest, res: Response): Promise
     if (companyId) {
       calculateCleanerPayForJob(jobId, companyId).catch((e) => console.warn('calculateCleanerPayForJob after complete:', e));
     }
-    res.json(data);
+    const out = companyId ? await jobWithDefaultChecklist(data, companyId) : data;
+    res.json(out);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -465,44 +500,6 @@ router.post('/:jobId/photos', async (req: AuthRequest, res: Response): Promise<v
     res.json(data);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
-  }
-});
-
-// GET /api/jobs/:id — single job (must be after /staff/:staffId and other specific routes)
-router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
-  const companyId = req.companyId;
-  if (!companyId) {
-    res.status(403).json({ error: 'No company' });
-    return;
-  }
-
-  const { id } = req.params;
-  try {
-    const { data, error } = await supabase
-      .from('jobs')
-      .select(`
-        *,
-        staff_members:job_assignments(staff:profiles(id, full_name))
-      `)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .single();
-
-    if (error || !data) {
-      const code = error?.code === 'PGRST116' ? 404 : 500;
-      res.status(code).json({ error: 'Job not found' });
-      return;
-    }
-
-    const job = {
-      ...data,
-      staff_members: (data.staff_members ?? [])
-        .map((sm: any) => (sm.staff ? { id: sm.staff.id, name: sm.staff.full_name } : null))
-        .filter(Boolean),
-    };
-    res.json(job);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
   }
 });
 
